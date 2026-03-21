@@ -1,4 +1,4 @@
 import { createApp } from 'nativescript-vue';
-import Home from './components/Home.vue';
+import Splash from '../app/pages/Splash.vue'; 
 
-createApp(Home).start();
+createApp(Splash).start();
