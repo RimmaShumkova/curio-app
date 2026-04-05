@@ -2,7 +2,7 @@
   <Page actionBarHidden="true">
     <GridLayout rows="*">
 
-      <Image src="~/images/forest.png" />
+      <Image src="res://forest" />
 
       <StackLayout class="topText">
         <Label text="Читаем с Кьюрио" class="title" />
