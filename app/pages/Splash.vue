@@ -2,7 +2,7 @@
   <Frame>
     <Page actionBarHidden="true">
       <GridLayout class="page">
-        <Image src="res://logo" width="50%" height="30%" stretch="aspectFit" />
+        <Image src="res://logo1" width="50%" height="30%" stretch="aspectFit" />
       </GridLayout>
     </Page>
   </Frame>
