@@ -1,52 +1,64 @@
 <!-- WelcomePage.vue -->
 <template>
   <Page actionBarHidden="true" class="page">
-    <ScrollView>
-      <StackLayout class="mainContent">
-        
-        <Label :text="'Привет, ' + childName + '! Давай читать!'" class="welcomeLabel" />
-        
-        <!-- ИСТОРИИ В РЯД (3 КОЛОНКИ) -->
-        <GridLayout columns="*, *, *" class="storiesGrid" horizontalAlignment="center">
+    <GridLayout columns="*, auto">
+
+      <!-- ОСНОВНОЙ КОНТЕНТ -->
+      <ScrollView col="0">
+        <StackLayout class="mainContent">
           
-          <!-- ИСТОРИЯ 1 -->
-          <StackLayout col="0" class="storyItem">
-            <Image src="res://berries_kids" class="storyImage" stretch="aspectFit" />
-            <Label text="Друзья собирают ягоды" class="storyLabel" textWrap="true" />
-          </StackLayout>
+          <!-- ПРИВЕТСТВИЕ -->
+          <Label class="welcomeLabel" textWrap="true">
+            <FormattedString>
+              <Span text="Привет, " />
+              <Span :text="childName" class="nameSpan" />
+              <Span text="! Давай читать!" />
+            </FormattedString>
+          </Label>
           
-          <!-- ИСТОРИЯ 2 -->
-          <StackLayout col="1" class="storyItem">
-            <Image src="res://curio_garden" class="storyImage" stretch="aspectFit" />
-            <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
-          </StackLayout>
-          
-          <!-- ИСТОРИЯ 3 -->
-          <StackLayout col="2" class="storyItem">
-            <Image src="res://curio_garden_locked" class="storyImage" stretch="aspectFit" />
-            <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
-          </StackLayout>
-          
-        </GridLayout>
-        
-        <!-- КНОПКА ДАЛЕЕ -->
-        <StackLayout class="buttonWrapper">
-          <GridLayout class="buttonContainer" @tap="goToNext">
-            <StackLayout class="buttonShadow" />
-            <StackLayout class="buttonMain">
-              <Label text="Далее" class="buttonText" />
+          <!-- ИСТОРИИ -->
+          <GridLayout columns="*, *, *" class="storiesGrid" horizontalAlignment="center">
+            
+            <StackLayout col="0" class="storyItem">
+              <Image src="res://berries_kids" class="storyImage" stretch="aspectFit" />
+              <Label text="Друзья собирают ягоды" class="storyLabel" textWrap="true" />
             </StackLayout>
+            
+            <StackLayout col="1" class="storyItem">
+              <Image src="res://curio_garden" class="storyImage" stretch="aspectFit" />
+              <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
+            </StackLayout>
+            
+            <StackLayout col="2" class="storyItem">
+              <Image src="res://curio_garden_locked" class="storyImage" stretch="aspectFit" />
+              <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
+            </StackLayout>
+            
           </GridLayout>
+          
+          <StackLayout class="bottomPadding" />
+          
+        </StackLayout>
+      </ScrollView>
+
+      <!-- ПРАВАЯ ПАНЕЛЬ -->
+      <StackLayout col="1" class="sideButtons">
+        
+        <StackLayout class="settingsButton" @tap="openSettings">
+          <Label text="⚙" class="settingsIcon" />
         </StackLayout>
         
-        <StackLayout class="bottomPadding" />
+        <Label text="Выход" class="exitButton" @tap="exitApp" />
         
       </StackLayout>
-    </ScrollView>
+
+    </GridLayout>
   </Page>
 </template>
 
 <script>
+import * as appSettings from "@nativescript/core/application-settings";
+
 export default {
   data() {
     return {
@@ -54,23 +66,18 @@ export default {
     };
   },
   mounted() {
-    // Получаем имя из context (правильный способ для NativeScript)
-    if (this.$context && this.$context.childName) {
-      this.childName = this.$context.childName;
-    }
+    const savedName = appSettings.getString("childName");
     
-    // Альтернативный способ через $route
-    if (this.$route && this.$route.params && this.$route.params.childName) {
-      this.childName = this.$route.params.childName;
+    if (savedName) {
+      this.childName = savedName;
     }
-    
-    console.log('Получено имя:', this.childName);
   },
   methods: {
-    goToNext() {
-      console.log('Переход дальше, имя:', this.childName);
-      // Переход на следующий экран (например, на чтение)
-      // this.$navigateTo(ReadingPage);
+    openSettings() {
+      console.log('Открыть настройки');
+    },
+    exitApp() {
+      console.log('Выход');
     }
   }
 };
@@ -83,7 +90,7 @@ export default {
 
 .mainContent {
   padding-left: 5%;
-  padding-right: 5%;
+  padding-right: 3%;
   padding-top: 8%;
   padding-bottom: 15%;
 }
@@ -96,7 +103,10 @@ export default {
   margin-bottom: 2rem;
 }
 
-/* СЕТКА ДЛЯ ИСТОРИЙ (3 В РЯД) */
+.nameSpan {
+  color: #F68B3C;
+}
+
 .storiesGrid {
   margin-bottom: 2rem;
 }
@@ -107,123 +117,51 @@ export default {
   padding: 5px;
 }
 
-/* КАРТИНКИ - АДАПТИВНЫЙ РАЗМЕР */
 .storyImage {
-  width: 100%;
+  width: 85%;
   height: auto;
   aspect-ratio: 1 / 1;
   border-radius: 15;
   margin-bottom: 8px;
+  horizontal-align: center;
 }
 
-/* ТЕКСТ ПОД КАРТИНКОЙ - ЯРКИЙ */
 .storyLabel {
-  font-size: 3vw;
-  font-weight: 600;
-  color: #F68B3C;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #3D0000;
   text-align: center;
-  margin-bottom: 0;
-  padding: 4px;
 }
 
-/* ===== АДАПТИВНАЯ КНОПКА ===== */
-.buttonWrapper {
-  width: 100%;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  horizontal-align: center;
+.sideButtons {
+  width: 70;
+  padding-top: 20%;
+  padding-right: 5;
+  align-items: center;
 }
 
-.buttonContainer {
-  width: 50%;
-  min-width: 180px;
-  max-width: 280px;
-  height: auto;
-  horizontal-align: center;
-}
-
-.buttonShadow {
-  width: 100%;
-  height: 100%;
-  background-color: #B85C1A;
-  border-radius: 50%;
-  margin-top: 8%;
-}
-
-.buttonMain {
-  width: 100%;
-  height: 100%;
-  background-color: #F68B3C;
-  border-radius: 50%;
+.settingsButton {
+  width: 50;
+  height: 50;
+  background-color: #4CAF50;
+  border-radius: 15;
   align-items: center;
   justify-content: center;
-  padding: 0.6rem 1rem;
+  margin-bottom: 20;
 }
 
-.buttonText {
-  font-size: 1.3rem;
-  font-weight: bold;
+.settingsIcon {
   color: white;
-  text-align: center;
+  font-size: 20;
+}
+
+.exitButton {
+  color: #F68B3C;
+  font-size: 1rem;
+  font-weight: bold;
 }
 
 .bottomPadding {
   height: 3rem;
-}
-
-/* Адаптация под экраны */
-@media (min-width: 800px) {
-  .welcomeLabel {
-    font-size: 2.5rem;
-  }
-  
-  .storyLabel {
-    font-size: 1.2rem;
-  }
-  
-  .storyImage {
-    border-radius: 20;
-  }
-  
-  .buttonContainer {
-    width: 40%;
-    max-width: 320px;
-  }
-  
-  .buttonText {
-    font-size: 1.8rem;
-  }
-  
-  .bottomPadding {
-    height: 4rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .welcomeLabel {
-    font-size: 1.5rem;
-  }
-  
-  .storyLabel {
-    font-size: 3.5vw;
-  }
-  
-  .storyImage {
-    border-radius: 10;
-  }
-  
-  .buttonContainer {
-    width: 60%;
-    min-width: 160px;
-    max-width: 220px;
-  }
-  
-  .buttonText {
-    font-size: 1rem;
-  }
-  
-  .bottomPadding {
-    height: 2rem;
-  }
 }
 </style>

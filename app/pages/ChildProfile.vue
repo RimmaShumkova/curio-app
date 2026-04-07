@@ -1,4 +1,4 @@
-<!-- RegistrationPage.vue -->
+<!-- ChildProfile.vue -->
 <template>
   <Page actionBarHidden="true" class="page">
     <ScrollView>
@@ -40,6 +40,7 @@
 </template>
 
 <script>
+import * as appSettings from "@nativescript/core/application-settings";
 import WelcomePage from "./WelcomePage.vue";
 
 export default {
@@ -63,12 +64,12 @@ export default {
         return;
       }
       
-      // Переход на экран приветствия с передачей имени через context
+      // СОХРАНЯЕМ ИМЯ В ГЛОБАЛЬНОЕ ХРАНИЛИЩЕ
+      appSettings.setString("childName", this.childName);
+      appSettings.setString("childGender", this.selectedGender);
+      
+      // Переход на экран приветствия
       this.$navigateTo(WelcomePage, {
-        context: {
-          childName: this.childName,
-          selectedGender: this.selectedGender
-        },
         transition: {
           name: "slide",
           duration: 300,
@@ -81,6 +82,7 @@ export default {
 </script>
 
 <style scoped>
+/* твои стили остаются без изменений */
 .page {
   background-color: #FFFCE1;
 }
