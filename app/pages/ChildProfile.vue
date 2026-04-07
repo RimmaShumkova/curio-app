@@ -1,3 +1,4 @@
+<!-- RegistrationPage.vue -->
 <template>
   <Page actionBarHidden="true" class="page">
     <ScrollView>
@@ -24,9 +25,7 @@
         <!-- КНОПКА С ТЕНЬЮ -->
         <StackLayout class="buttonWrapper">
           <GridLayout class="buttonContainer" @tap="continuePressed">
-            <!-- ТЕНЬ (нижний темный слой) -->
             <StackLayout class="buttonShadow" />
-            <!-- ОСНОВНОЙ СЛОЙ -->
             <StackLayout class="buttonMain">
               <Label text="Продолжить" class="buttonText" />
             </StackLayout>
@@ -41,6 +40,8 @@
 </template>
 
 <script>
+import WelcomePage from "./WelcomePage.vue";
+
 export default {
   data() {
     return {
@@ -55,6 +56,25 @@ export default {
     continuePressed() {
       console.log('Имя:', this.childName);
       console.log('Пол:', this.selectedGender);
+      
+      // Проверяем, что имя введено
+      if (!this.childName.trim()) {
+        alert('Пожалуйста, введите имя ребенка');
+        return;
+      }
+      
+      // Переход на экран приветствия с передачей имени через context
+      this.$navigateTo(WelcomePage, {
+        context: {
+          childName: this.childName,
+          selectedGender: this.selectedGender
+        },
+        transition: {
+          name: "slide",
+          duration: 300,
+          curve: "ease"
+        }
+      });
     }
   }
 };
@@ -112,7 +132,6 @@ export default {
   height: 6rem;
 }
 
-/* ===== АДАПТИВНАЯ КНОПКА ===== */
 .buttonWrapper {
   width: 100%;
   margin-top: 1.5rem;
@@ -128,7 +147,6 @@ export default {
   horizontal-align: center;
 }
 
-/* ТЕНЬ - нижний темный слой (адаптивная) */
 .buttonShadow {
   width: 100%;
   height: 100%;
@@ -137,7 +155,6 @@ export default {
   margin-top: 8%;
 }
 
-/* ОСНОВНОЙ СЛОЙ КНОПКИ */
 .buttonMain {
   width: 100%;
   height: 100%;
@@ -159,7 +176,6 @@ export default {
   height: 3rem;
 }
 
-/* Адаптация под экраны */
 @media (min-width: 800px) {
   .titleLabel {
     font-size: 2.5rem;
