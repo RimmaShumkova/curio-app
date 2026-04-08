@@ -1,9 +1,7 @@
-<!-- ChildProfile.vue -->
 <template>
   <Page actionBarHidden="true" class="page">
     <ScrollView>
       <StackLayout class="mainContent">
-
         <Label text="Имя ребенка" class="titleLabel" />
         
         <TextField v-model="childName" hint="Кьюрио" class="nameInput" />
@@ -22,7 +20,6 @@
           </StackLayout>
         </GridLayout>
         
-        <!-- КНОПКА С ТЕНЬЮ -->
         <StackLayout class="buttonWrapper">
           <GridLayout class="buttonContainer" @tap="continuePressed">
             <StackLayout class="buttonShadow" />
@@ -33,7 +30,6 @@
         </StackLayout>
 
         <StackLayout class="bottomPadding" />
-
       </StackLayout>
     </ScrollView>
   </Page>
@@ -41,7 +37,7 @@
 
 <script>
 import * as appSettings from "@nativescript/core/application-settings";
-import WelcomePage from "./WelcomePage.vue";
+import HomePage from '../../home-page/ui/HomePage.vue';
 
 export default {
   data() {
@@ -58,18 +54,15 @@ export default {
       console.log('Имя:', this.childName);
       console.log('Пол:', this.selectedGender);
       
-      // Проверяем, что имя введено
       if (!this.childName.trim()) {
         alert('Пожалуйста, введите имя ребенка');
         return;
       }
       
-      // СОХРАНЯЕМ ИМЯ В ГЛОБАЛЬНОЕ ХРАНИЛИЩЕ
       appSettings.setString("childName", this.childName);
       appSettings.setString("childGender", this.selectedGender);
       
-      // Переход на экран приветствия
-      this.$navigateTo(WelcomePage, {
+      this.$navigateTo(HomePage, {
         transition: {
           name: "slide",
           duration: 300,
@@ -82,7 +75,6 @@ export default {
 </script>
 
 <style scoped>
-/* твои стили остаются без изменений */
 .page {
   background-color: #FFFCE1;
 }

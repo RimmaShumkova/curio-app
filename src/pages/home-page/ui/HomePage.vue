@@ -1,13 +1,8 @@
-<!-- WelcomePage.vue -->
 <template>
   <Page actionBarHidden="true" class="page">
     <GridLayout columns="*, auto">
-
-      <!-- ОСНОВНОЙ КОНТЕНТ -->
       <ScrollView col="0">
         <StackLayout class="mainContent">
-          
-          <!-- ПРИВЕТСТВИЕ -->
           <Label class="welcomeLabel" textWrap="true">
             <FormattedString>
               <Span text="Привет, " />
@@ -16,9 +11,7 @@
             </FormattedString>
           </Label>
           
-          <!-- ИСТОРИИ -->
           <GridLayout columns="*, *, *" class="storiesGrid" horizontalAlignment="center">
-            
             <StackLayout col="0" class="storyItem">
               <Image src="res://berries_kids" class="storyImage" stretch="aspectFit" />
               <Label text="Друзья собирают ягоды" class="storyLabel" textWrap="true" />
@@ -33,25 +26,19 @@
               <Image src="res://curio_garden_locked" class="storyImage" stretch="aspectFit" />
               <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
             </StackLayout>
-            
           </GridLayout>
           
           <StackLayout class="bottomPadding" />
-          
         </StackLayout>
       </ScrollView>
 
-      <!-- ПРАВАЯ ПАНЕЛЬ -->
       <StackLayout col="1" class="sideButtons">
-        
         <StackLayout class="settingsButton" @tap="openSettings">
           <Label text="⚙" class="settingsIcon" />
         </StackLayout>
         
         <Label text="Выход" class="exitButton" @tap="exitApp" />
-        
       </StackLayout>
-
     </GridLayout>
   </Page>
 </template>
@@ -67,7 +54,6 @@ export default {
   },
   mounted() {
     const savedName = appSettings.getString("childName");
-    
     if (savedName) {
       this.childName = savedName;
     }

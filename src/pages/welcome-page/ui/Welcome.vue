@@ -1,7 +1,8 @@
 <template>
   <Page actionBarHidden="true" class="page">
     <GridLayout rows="auto, *, auto" columns="*">
-      <Image row="0" rowSpan="3" col="0" src="res://forest" stretch="aspectFit" horizontalAlignment="center" verticalAlignment="center" />
+      <Image row="0" rowSpan="3" col="0" src="res://forest" stretch="aspectFit" 
+             horizontalAlignment="center" verticalAlignment="center" />
       
       <StackLayout row="0" col="0" class="topText">
         <Label text="Читаем с Кьюрио" class="title" />
@@ -22,8 +23,7 @@ export default {
   methods: {
     googleLogin() {
       console.log("Нажата кнопка Google, переходим на ChildProfile");
-      // Убедитесь что путь к файлу правильный
-      this.$navigateTo(require("./ChildProfile.vue").default);
+      this.$navigateTo(require('../../child-profile-page/ui/ChildProfile.vue').default);
     }
   }
 };
@@ -31,7 +31,7 @@ export default {
 
 <style scoped>
 .page {
-  background-color: #ffffff; /* фон, если изображение не покрывает всю область */
+  background-color: #ffffff;
 }
 
 .topText {
@@ -49,7 +49,7 @@ export default {
 
 .bottomArea {
   horizontal-align: center;
-  margin-bottom: 60; /* отступ от нижнего края */
+  margin-bottom: 60;
 }
 
 .googleBtn {
@@ -75,7 +75,6 @@ export default {
   text-align: center;
 }
 
-/* Адаптация для маленьких экранов */
 @media (max-width: 480) {
   .title {
     font-size: 36;

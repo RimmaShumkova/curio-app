@@ -1,6 +1,6 @@
 {
   "name": "myAwesomeApp",
-  "main": "src/app.ts",
+  "main": "src/app/main.ts",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
