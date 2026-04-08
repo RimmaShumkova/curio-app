@@ -1,8 +1,21 @@
 .mainContent {
   padding-left: 5%;
   padding-right: 5%;
-  padding-top: 15%;
-  padding-bottom: 15%;
+  padding-top: 5%;
+  padding-bottom: 5%;
+}
+
+.title-primary {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #3D0000;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.title-primary:first-child {
+  margin-top: 0;
 }
 
 .nameInput {
@@ -10,16 +23,16 @@
   border-radius: 85;
   border-width: 2;
   border-color: #F68B3C;
-  padding: 0.8rem;
+  padding: 0.6rem;
   font-size: 1.2rem;
   margin-left: 0.5rem;
   margin-right: 0.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .genderRow {
-  margin-top: 0.5rem;
-  margin-bottom: 2.5rem;
+  margin-top: 0.3rem;
+  margin-bottom: 1rem;
 }
 
 .genderItem {
@@ -28,40 +41,123 @@
 }
 
 .genderImage {
-  width: 6rem;
-  height: 6rem;
+  width: 5rem;
+  height: 5rem;
+}
+
+.button-wrapper {
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  horizontal-align: center;
+}
+
+.button-container {
+  width: 50%;
+  min-width: 180px;
+  max-width: 280px;
+  height: auto;
+  horizontal-align: center;
+}
+
+.button-shadow {
+  width: 100%;
+  height: 100%;
+  background-color: #B85C1A;
+  border-radius: 50%;
+  margin-top: 8%;
+}
+
+.button-main {
+  width: 100%;
+  height: 100%;
+  background-color: #F68B3C;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+}
+
+.button-text {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+.bottom-padding {
+  height: 3rem;
 }
 
 @media (min-width: 800px) {
-  .nameInput {
-    font-size: 1.5rem;
-    padding: 1rem;
-    margin-bottom: 3rem;
+  .title-primary {
+    font-size: 2.5rem;
+    margin-bottom: 0.8rem;
+    margin-top: 1rem;
   }
   
-  .genderRow {
-    margin-bottom: 3.5rem;
+  .nameInput {
+    font-size: 1.5rem;
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
   }
   
   .genderImage {
-    width: 8rem;
-    height: 8rem;
+    width: 7rem;
+    height: 7rem;
+  }
+  
+  .button-container {
+    width: 40%;
+    max-width: 320px;
+  }
+  
+  .button-text {
+    font-size: 1.8rem;
+  }
+  
+  .button-shadow {
+    margin-top: 6%;
+  }
+  
+  .bottom-padding {
+    height: 4rem;
   }
 }
 
 @media (max-width: 480px) {
-  .nameInput {
-    font-size: 1rem;
-    padding: 0.6rem;
-    margin-bottom: 1.5rem;
+  .title-primary {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+    margin-top: 0.5rem;
   }
   
-  .genderRow {
-    margin-bottom: 2rem;
+  .nameInput {
+    font-size: 1rem;
+    padding: 0.5rem;
+    margin-bottom: 0.8rem;
   }
   
   .genderImage {
-    width: 4.5rem;
-    height: 4.5rem;
+    width: 4rem;
+    height: 4rem;
+  }
+  
+  .button-container {
+    width: 60%;
+    min-width: 160px;
+    max-width: 220px;
+  }
+  
+  .button-text {
+    font-size: 1rem;
+  }
+  
+  .button-shadow {
+    margin-top: 10%;
+  }
+  
+  .bottom-padding {
+    height: 2rem;
   }
 }

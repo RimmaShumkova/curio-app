@@ -1,6 +1,6 @@
 .mainContent {
   padding-left: 5%;
-  padding-right: 3%;
+  padding-right: 5%;
   padding-top: 8%;
   padding-bottom: 15%;
 }
@@ -44,29 +44,27 @@
 }
 
 .sideButtons {
-  width: 70;
-  padding-top: 20%;
-  padding-right: 5;
+  width: auto;
+  padding-top: 8%;
+  padding-left: 15px;
+  padding-right: 10px;
   align-items: center;
+  justify-content: flex-start;
 }
 
+/* Кнопка настроек - картинка на всю область */
 .settingsButton {
   width: 50;
   height: 50;
-  background-color: #4CAF50;
-  border-radius: 15;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20;
+  margin-bottom: 25;
 }
 
-.settingsIcon {
-  color: white;
-  font-size: 20;
-}
-
+/* Кнопка выхода - картинка на всю область */
 .exitButton {
-  color: #F68B3C;
-  font-size: 1rem;
-  font-weight: bold;
+  width: 50;
+  height: 50;
+}
+
+.bottom-padding {
+  height: 3rem;
 }

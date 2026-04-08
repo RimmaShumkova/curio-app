@@ -1,8 +1,22 @@
 <template>
   <Page actionBarHidden="true" class="page">
-    <GridLayout columns="*, auto">
-      <ScrollView col="0">
+    <GridLayout columns="auto, *">
+      
+      <!-- Левая панель с кнопками -->
+      <StackLayout col="0" class="sideButtons">
+        
+        <!-- Кнопка настроек (картинка на всю кнопку) -->
+        <Image src="res://settings_button" class="settingsButton" @tap="goToSettings" />
+        
+        <!-- Кнопка выхода (картинка на всю кнопку) -->
+        <Image src="res://exit_button" class="exitButton" @tap="logout" />
+        
+      </StackLayout>
+
+      <!-- Основной контент -->
+      <ScrollView col="1">
         <StackLayout class="mainContent">
+          
           <Label class="welcomeLabel" textWrap="true">
             <FormattedString>
               <Span text="Привет, " />
@@ -12,6 +26,7 @@
           </Label>
           
           <GridLayout columns="*, *, *" class="storiesGrid" horizontalAlignment="center">
+            
             <StackLayout col="0" class="storyItem">
               <Image src="res://berries_kids" class="storyImage" stretch="aspectFit" />
               <Label text="Друзья собирают ягоды" class="storyLabel" textWrap="true" />
@@ -26,25 +41,22 @@
               <Image src="res://curio_garden_locked" class="storyImage" stretch="aspectFit" />
               <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
             </StackLayout>
+            
           </GridLayout>
           
           <StackLayout class="bottom-padding" />
+          
         </StackLayout>
       </ScrollView>
-
-      <StackLayout col="1" class="sideButtons">
-        <StackLayout class="settingsButton" @tap="openSettings">
-          <Label text="⚙" class="settingsIcon" />
-        </StackLayout>
-        
-        <Label text="Выход" class="exitButton" @tap="exitApp" />
-      </StackLayout>
+      
     </GridLayout>
   </Page>
 </template>
 
 <script>
 import * as appSettings from "@nativescript/core/application-settings";
+import ChildProfile from '../../child-profile-page/ui/ChildProfile.vue';
+import Welcome from '../../welcome-page/ui/Welcome.vue';
 
 export default {
   data() {
@@ -59,11 +71,16 @@ export default {
     }
   },
   methods: {
-    openSettings() {
-      console.log('Открыть настройки');
+    goToSettings() {
+      this.$navigateTo(ChildProfile);
     },
-    exitApp() {
-      console.log('Выход');
+    logout() {
+      appSettings.remove("childName");
+      appSettings.remove("childGender");
+      this.$navigateTo(Welcome, {
+        clearHistory: true,
+        transition: { name: "fade", duration: 300 }
+      });
     }
   }
 };

@@ -1,12 +1,13 @@
 <template>
   <Page actionBarHidden="true" class="page">
     <GridLayout rows="*, auto" columns="*">
-      <!-- Фоновое изображение на весь экран -->
+      
       <Image row="0" rowSpan="2" col="0" 
              src="res://forest" 
-             stretch="aspectFill" 
-             horizontalAlignment="stretch" 
-             verticalAlignment="stretch" />
+             stretch="aspectFill" />
+      
+      <StackLayout row="0" rowSpan="2" col="0" 
+                   backgroundColor="rgba(0,0,0,0.35)" />
       
       <StackLayout row="0" col="0" class="topText">
         <Label text="Читаем с Кьюрио" class="title" />
@@ -18,6 +19,7 @@
           <Label text="Войти через Google" class="googleBtnText" col="1" />
         </GridLayout>
       </StackLayout>
+      
     </GridLayout>
   </Page>
 </template>

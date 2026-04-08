@@ -3,23 +3,16 @@
     <ScrollView>
       <StackLayout class="mainContent">
         <Label text="Имя ребенка" class="title-primary" />
-        
         <TextField v-model="childName" hint="Кьюрио" class="nameInput" />
-        
         <Label text="Пол" class="title-primary" />
-        
         <GridLayout columns="auto, auto" class="genderRow" horizontalAlignment="center">
           <StackLayout col="0" @tap="selectGender('boy')" class="genderItem">
-            <Image :src="selectedGender === 'boy' ? 'res://boy_selected' : 'res://boy'" 
-                   class="genderImage" stretch="aspectFit" />
+            <Image :src="selectedGender === 'boy' ? 'res://boy_selected' : 'res://boy'" class="genderImage" stretch="aspectFit" />
           </StackLayout>
-
           <StackLayout col="1" @tap="selectGender('girl')" class="genderItem">
-            <Image :src="selectedGender === 'girl' ? 'res://girl_selected' : 'res://girl'" 
-                   class="genderImage" stretch="aspectFit" />
+            <Image :src="selectedGender === 'girl' ? 'res://girl_selected' : 'res://girl'" class="genderImage" stretch="aspectFit" />
           </StackLayout>
         </GridLayout>
-        
         <StackLayout class="button-wrapper">
           <GridLayout class="button-container" @tap="continuePressed">
             <StackLayout class="button-shadow" />
@@ -28,7 +21,6 @@
             </StackLayout>
           </GridLayout>
         </StackLayout>
-
         <StackLayout class="bottom-padding" />
       </StackLayout>
     </ScrollView>
@@ -51,23 +43,14 @@ export default {
       this.selectedGender = gender;
     },
     continuePressed() {
-      console.log('Имя:', this.childName);
-      console.log('Пол:', this.selectedGender);
-      
       if (!this.childName.trim()) {
         alert('Пожалуйста, введите имя ребенка');
         return;
       }
-      
       appSettings.setString("childName", this.childName);
       appSettings.setString("childGender", this.selectedGender);
-      
       this.$navigateTo(HomePage, {
-        transition: {
-          name: "slide",
-          duration: 300,
-          curve: "ease"
-        }
+        transition: { name: "slide", duration: 300, curve: "ease" }
       });
     }
   }
