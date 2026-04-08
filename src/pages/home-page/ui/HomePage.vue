@@ -4,19 +4,15 @@
       
       <!-- Левая панель с кнопками -->
       <StackLayout col="0" class="sideButtons">
-        
-        <!-- Кнопка настроек (картинка на всю кнопку) -->
         <Image src="res://settings_button" class="settingsButton" @tap="goToSettings" />
-        
-        <!-- Кнопка выхода (картинка на всю кнопку) -->
         <Image src="res://exit_button" class="exitButton" @tap="logout" />
-        
       </StackLayout>
 
       <!-- Основной контент -->
       <ScrollView col="1">
         <StackLayout class="mainContent">
           
+          <!-- Приветствие -->
           <Label class="welcomeLabel" textWrap="true">
             <FormattedString>
               <Span text="Привет, " />
@@ -25,23 +21,18 @@
             </FormattedString>
           </Label>
           
+          <!-- Сетка историй -->
           <GridLayout columns="*, *, *" class="storiesGrid" horizontalAlignment="center">
-            
-            <StackLayout col="0" class="storyItem">
-              <Image src="res://berries_kids" class="storyImage" stretch="aspectFit" />
-              <Label text="Друзья собирают ягоды" class="storyLabel" textWrap="true" />
+            <StackLayout 
+              v-for="story in stories" 
+              :key="story.id"
+              :col="(parseInt(story.id) - 1) % 3"
+              class="storyItem"
+              @tap="openStory(story)"
+            >
+              <Image :src="story.coverImage" class="storyImage" stretch="aspectFit" />
+              <Label :text="story.title" class="storyLabel" textWrap="true" />
             </StackLayout>
-            
-            <StackLayout col="1" class="storyItem">
-              <Image src="res://curio_garden" class="storyImage" stretch="aspectFit" />
-              <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
-            </StackLayout>
-            
-            <StackLayout col="2" class="storyItem">
-              <Image src="res://curio_garden_locked" class="storyImage" stretch="aspectFit" />
-              <Label text="Кьюрио в саду" class="storyLabel" textWrap="true" />
-            </StackLayout>
-            
           </GridLayout>
           
           <StackLayout class="bottom-padding" />
@@ -54,33 +45,50 @@
 </template>
 
 <script>
-import * as appSettings from "@nativescript/core/application-settings";
 import ChildProfile from '../../child-profile-page/ui/ChildProfile.vue';
 import Welcome from '../../welcome-page/ui/Welcome.vue';
+import StoryReaderPage from '../../story-reader-page/ui/StoryReaderPage.vue';
+import { childModel } from '../../../entities/child/model/child';
+import { storyModel } from '../../../entities/story/model/story';
 
 export default {
   data() {
     return {
-      childName: 'Кьюрио'
+      childName: 'Кьюрио',
+      stories: []
     };
   },
   mounted() {
-    const savedName = appSettings.getString("childName");
-    if (savedName) {
-      this.childName = savedName;
+    const profile = childModel.load();
+    if (profile.name) {
+      this.childName = profile.name;
     }
+    this.stories = storyModel.getAll();
   },
   methods: {
     goToSettings() {
       this.$navigateTo(ChildProfile);
     },
     logout() {
-      appSettings.remove("childName");
-      appSettings.remove("childGender");
+      childModel.clear();
       this.$navigateTo(Welcome, {
         clearHistory: true,
         transition: { name: "fade", duration: 300 }
       });
+    },
+    openStory(story) {
+      if (story.isLocked) {
+        alert('Эта история пока недоступна');
+        return;
+      }
+      // Временно показываем alert вместо перехода
+      alert(`Вы выбрали: ${story.title}`);
+      
+      // Потом раскомментируете:
+      // this.$navigateTo(StoryReaderPage, {
+      //   props: { storyId: story.id },
+      //   transition: { name: "slide", duration: 300 }
+      // });
     }
   }
 };
