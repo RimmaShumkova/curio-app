@@ -1,0 +1,67 @@
+.mainContent {
+  padding-left: 5%;
+  padding-right: 5%;
+  padding-top: 15%;
+  padding-bottom: 15%;
+}
+
+.nameInput {
+  background-color: white;
+  border-radius: 85;
+  border-width: 2;
+  border-color: #F68B3C;
+  padding: 0.8rem;
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.genderRow {
+  margin-top: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.genderItem {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.genderImage {
+  width: 6rem;
+  height: 6rem;
+}
+
+@media (min-width: 800px) {
+  .nameInput {
+    font-size: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 3rem;
+  }
+  
+  .genderRow {
+    margin-bottom: 3.5rem;
+  }
+  
+  .genderImage {
+    width: 8rem;
+    height: 8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nameInput {
+    font-size: 1rem;
+    padding: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .genderRow {
+    margin-bottom: 2rem;
+  }
+  
+  .genderImage {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+}

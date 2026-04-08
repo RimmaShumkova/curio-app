@@ -1,5 +1,16 @@
 @import 'tailwindcss';
 
+/* ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===== */
+:root {
+  --primary-orange: #F68B3C;
+  --primary-dark: #3D0000;
+  --primary-orange-dark: #B85C1A;
+  --background-light: #FFFCE1;
+  --white: #ffffff;
+  --green: #4CAF50;
+}
+
+/* ===== БАЗОВЫЕ СТИЛИ ===== */
 ActionBar {
   background-color: #65adf1;
   color: white;
@@ -8,4 +19,110 @@ ActionBar {
 Page {
   background: white;
   color: black;
+}
+
+/* ===== ОБЩИЕ КЛАССЫ ДЛЯ СТРАНИЦ ===== */
+.page {
+  background-color: var(--background-light);
+}
+
+/* ===== ОБЩИЕ ЗАГОЛОВКИ ===== */
+.title-primary {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary-dark);
+  text-align: center;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+}
+
+.title-primary:first-child {
+  margin-top: 0;
+}
+
+/* ===== ОБЩИЕ КНОПКИ ===== */
+.button-wrapper {
+  width: 100%;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  horizontal-align: center;
+}
+
+.button-container {
+  width: 50%;
+  min-width: 180px;
+  max-width: 280px;
+  height: auto;
+  horizontal-align: center;
+}
+
+.button-shadow {
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-orange-dark);
+  border-radius: 50%;
+  margin-top: 8%;
+}
+
+.button-main {
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-orange);
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+}
+
+.button-text {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+/* ===== ОБЩИЙ ОТСТУП ===== */
+.bottom-padding {
+  height: 3rem;
+}
+
+/* ===== АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ ===== */
+@media (min-width: 800px) {
+  .button-container {
+    width: 40%;
+    max-width: 320px;
+  }
+  
+  .button-text {
+    font-size: 1.8rem;
+  }
+  
+  .button-shadow {
+    margin-top: 6%;
+  }
+  
+  .bottom-padding {
+    height: 4rem;
+  }
+}
+
+/* ===== АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ ===== */
+@media (max-width: 480px) {
+  .button-container {
+    width: 60%;
+    min-width: 160px;
+    max-width: 220px;
+  }
+  
+  .button-text {
+    font-size: 1rem;
+  }
+  
+  .button-shadow {
+    margin-top: 10%;
+  }
+  
+  .bottom-padding {
+    height: 2rem;
+  }
 }

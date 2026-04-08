@@ -7,19 +7,15 @@
 </template>
 
 <script>
+import Welcome from '../../welcome-page/ui/Welcome.vue';
+
 export default {
   mounted() {
     setTimeout(() => {
-      this.$navigateTo(require('../../welcome-page/ui/Welcome.vue').default);
+      this.$navigateTo(Welcome);
     }, 2000);
   }
 };
 </script>
 
-<style scoped>
-.page {
-  background-color: #F68B3C;
-  justify-content: center;
-  align-items: center;
-}
-</style>
+<style scoped src="./Splash.css" />
