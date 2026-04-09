@@ -4,7 +4,7 @@ import App from './App.vue';
 import { GoogleSignin } from '@nativescript/google-signin';
 
 GoogleSignin.configure({
-  clientId: "875785150570-dkf15r6vdnp1n2tef5qbmio1pdsn7dun.apps.googleusercontent.com"
+  clientId: "875785150570-g3u33eos249akrubsmo88jf7th72agvu.apps.googleusercontent.com"
 });
 
 createApp(App).start()

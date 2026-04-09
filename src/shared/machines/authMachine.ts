@@ -1,6 +1,7 @@
 import { createMachine, assign, fromPromise } from "xstate";
-import { GoogleSignin, User } from "@nativescript/google-signin";
+import { GoogleSignin } from "@nativescript/google-signin";
 
+// Типы для контекста
 interface AuthContext {
   user: {
     name: string;
@@ -10,13 +11,18 @@ interface AuthContext {
   error: any | null;
 }
 
+// Типы для событий
+type AuthEvent = 
+  | { type: "LOGIN" }
+  | { type: "RETRY" };
+
 export const authMachine = createMachine({
   id: "auth",
   initial: "unauthorized",
   
   types: {} as {
     context: AuthContext;
-    events: { type: "LOGIN" } | { type: "RETRY" };
+    events: AuthEvent;
   },
   
   context: {
@@ -34,26 +40,26 @@ export const authMachine = createMachine({
     authorizing: {
       invoke: {
         src: fromPromise(async () => {
-          const user: User = await GoogleSignin.signIn();
-        
+          const result = await GoogleSignin.signIn();
+          
           return {
-            name: user.displayName || "",
-            email: user.email || "",
-            id: user.id || ""
+            name: result.displayName || "",
+            email: result.email || "",
+            id: result.id || ""
           };
         }),
         
         onDone: {
           target: "authorized",
           actions: assign({
-            user: ({ event }) => event.output
+            user: ({ event }: { event: any }) => event.output
           })
         },
         
         onError: {
           target: "error",
           actions: assign({
-            error: ({ event }) => event.error
+            error: ({ event }: { event: any }) => event.error
           })
         }
       }
