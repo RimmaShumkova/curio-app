@@ -3,22 +3,18 @@
     <GridLayout rows="*, auto" columns="*">
       <Image row="0" rowSpan="2" col="0" src="res://forest" stretch="aspectFill" />
       
-      <!-- Затемнение удалено -->
-      
       <StackLayout row="0" col="0" class="topText">
         <Label text="Читаем с Кьюрио" class="title" />
       </StackLayout>
       
       <StackLayout row="1" col="0" class="bottomArea">
-        <!-- Кнопка Google -->
         <GridLayout class="googleBtn" columns="auto, *" @tap="onGoogleLogin">
           <Image src="res://icgoogle" class="googleIcon" />
           <Label text="Войти через Google" class="googleBtnText" col="1" />
         </GridLayout>
         
-        <!-- Кнопка "Войти как гость" -->
-        <GridLayout class="guestBtn" columns="*, auto" @tap="onGuestLogin">
-          <Label text="Войти как гость" class="guestBtnText" col="0" />
+        <GridLayout class="btn-orange" columns="*, auto" @tap="onGuestLogin" style="margin-top: 16">
+          <Label text="Войти как гость" class="btn-orange-text" col="0" />
         </GridLayout>
       </StackLayout>
     </GridLayout>
@@ -35,9 +31,7 @@ export default {
       try {
         const user = await GoogleSignin.signIn();
         console.log('Успешный вход:', user);
-        this.$navigateTo(ChildProfile, {
-          transition: { name: "slide", duration: 300 }
-        });
+        this.$navigateTo(ChildProfile);
       } catch (error) {
         console.error('Ошибка входа:', error);
         let message = 'Не удалось войти через Google. ';
@@ -53,9 +47,7 @@ export default {
     },
     onGuestLogin() {
       console.log('Вход как гость');
-      this.$navigateTo(ChildProfile, {
-        transition: { name: "slide", duration: 300 }
-      });
+      this.$navigateTo(ChildProfile);
     }
   }
 };

@@ -32,53 +32,97 @@ Page {
   font-weight: bold;
   color: var(--primary-dark);
   text-align: center;
-  margin-bottom: 1rem;
-  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0.8rem;
 }
 
 .title-primary:first-child {
   margin-top: 0;
 }
 
+/* ===== ОБЩИЕ ПОЛЯ ВВОДА ===== */
+.input-primary {
+  background-color: white;
+  border-radius: 85;
+  border-width: 2;
+  border-color: var(--primary-orange);
+  padding: 0.6rem;
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 1rem;
+}
+
 /* ===== ОБЩИЕ КНОПКИ ===== */
-.button-wrapper {
-  width: 100%;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  horizontal-align: center;
-}
-
-.button-container {
-  width: 50%;
-  min-width: 180px;
-  max-width: 280px;
-  height: auto;
-  horizontal-align: center;
-}
-
-.button-shadow {
-  width: 100%;
-  height: 100%;
-  background-color: var(--primary-orange-dark);
-  border-radius: 50%;
-  margin-top: 8%;
-}
-
-.button-main {
-  width: 100%;
-  height: 100%;
+.btn-orange {
   background-color: var(--primary-orange);
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem 1rem;
+  border-radius: 20;
+  padding: 12 20;
+  width: 340;
+  elevation: 2;
+  text-align: center;
+  vertical-align: center;
 }
 
-.button-text {
-  font-size: 1.3rem;
-  font-weight: bold;
+.btn-orange-text {
   color: white;
+  font-size: 18;
+  font-weight: normal;
   text-align: center;
+}
+
+/* ===== ОБЩИЕ СТИЛИ ДЛЯ СЕТКИ ИСТОРИЙ ===== */
+.stories-grid {
+  margin-bottom: 2rem;
+}
+
+.story-item {
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 5px;
+  position: relative;
+}
+
+.story-image {
+  width: 85%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 15;
+  margin-bottom: 8px;
+  horizontal-align: center;
+}
+
+.story-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--primary-dark);
+  text-align: center;
+}
+
+/* ===== ОБЩИЕ СТИЛИ ДЛЯ БОКОВЫХ КНОПОК ===== */
+.side-buttons {
+  width: auto;
+  padding-top: 8%;
+  padding-left: 15px;
+  padding-right: 10px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.side-button {
+  width: 50;
+  height: 50;
+  margin-bottom: 25;
+}
+
+/* ===== СТИЛИ ДЛЯ ЗАГРУЗКИ ===== */
+ActivityIndicator {
+  color: var(--primary-orange);
+}
+
+.loader {
+  margin-top: 40;
+  margin-bottom: 40;
 }
 
 /* ===== ОБЩИЙ ОТСТУП ===== */
@@ -86,19 +130,31 @@ Page {
   height: 3rem;
 }
 
-/* ===== АДАПТИВНОСТЬ ДЛЯ ПЛАНШЕТОВ ===== */
+/* ===== АДАПТИВНОСТЬ ===== */
 @media (min-width: 800px) {
-  .button-container {
-    width: 40%;
-    max-width: 320px;
+  .title-primary {
+    font-size: 2.5rem;
+    margin-bottom: 0.8rem;
+    margin-top: 1rem;
   }
   
-  .button-text {
-    font-size: 1.8rem;
+  .input-primary {
+    font-size: 1.5rem;
+    padding: 0.8rem;
+    margin-bottom: 1.5rem;
   }
   
-  .button-shadow {
-    margin-top: 6%;
+  .story-image {
+    width: 90%;
+  }
+  
+  .btn-orange {
+    width: 320px;
+    padding: 14 24;
+  }
+  
+  .btn-orange-text {
+    font-size: 20;
   }
   
   .bottom-padding {
@@ -106,20 +162,30 @@ Page {
   }
 }
 
-/* ===== АДАПТИВНОСТЬ ДЛЯ ТЕЛЕФОНОВ ===== */
 @media (max-width: 480px) {
-  .button-container {
-    width: 60%;
-    min-width: 160px;
-    max-width: 220px;
+  .title-primary {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+    margin-top: 0.5rem;
   }
   
-  .button-text {
+  .input-primary {
     font-size: 1rem;
+    padding: 0.5rem;
+    margin-bottom: 0.8rem;
   }
   
-  .button-shadow {
-    margin-top: 10%;
+  .story-image {
+    width: 80%;
+  }
+  
+  .btn-orange {
+    width: 240px;
+    padding: 10 16;
+  }
+  
+  .btn-orange-text {
+    font-size: 16;
   }
   
   .bottom-padding {

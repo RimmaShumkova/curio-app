@@ -3,7 +3,7 @@
     <ScrollView>
       <StackLayout class="mainContent">
         <Label text="Имя ребенка" class="title-primary" />
-        <TextField v-model="childName" hint="Кьюрио" class="nameInput" />
+        <TextField v-model="childName" hint="Кьюрио" class="input-primary" />
         
         <Label text="Пол" class="title-primary" />
         <GridLayout columns="auto, auto" class="genderRow" horizontalAlignment="center">
@@ -17,9 +17,8 @@
           </StackLayout>
         </GridLayout>
         
-        <!-- Кнопка "Продолжить" в стиле Welcome -->
-        <GridLayout class="continueBtn" columns="*, auto" @tap="continuePressed">
-          <Label text="Продолжить" class="continueBtnText" col="0" />
+        <GridLayout class="btn-orange continueBtn" columns="*, auto" @tap="continuePressed">
+          <Label text="Продолжить" class="btn-orange-text" col="0" />
         </GridLayout>
         
         <StackLayout class="bottom-padding" />
@@ -29,8 +28,9 @@
 </template>
 
 <script>
-import * as appSettings from "@nativescript/core/application-settings";
 import HomePage from '../../home-page/ui/HomePage.vue';
+import { TRANSITIONS } from '../../../shared/lib/constants';
+import { childModel } from '../../../entities/child/model/child';
 
 export default {
   data() {
@@ -48,11 +48,11 @@ export default {
         alert('Пожалуйста, введите имя ребенка');
         return;
       }
-      appSettings.setString("childName", this.childName);
-      appSettings.setString("childGender", this.selectedGender);
-      this.$navigateTo(HomePage, {
-        transition: { name: "slide", duration: 300, curve: "ease" }
+      childModel.save({
+        name: this.childName,
+        gender: this.selectedGender
       });
+      this.$navigateTo(HomePage, TRANSITIONS.slide);
     }
   }
 };
