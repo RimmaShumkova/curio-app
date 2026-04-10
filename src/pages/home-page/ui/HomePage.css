@@ -74,3 +74,23 @@
 .bottom-padding {
   height: 3rem;
 }
+
+.loader {
+  margin-top: 20;
+  margin-bottom: 20;
+}
+
+.errorLabel {
+  color: red;
+  text-align: center;
+  margin: 10;
+}
+
+.retryButton {
+  background-color: #F68B3C;
+  color: white;
+  padding: 10 20;
+  border-radius: 25;
+  margin: 10;
+  horizontal-align: center;
+}

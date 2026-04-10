@@ -4,23 +4,24 @@
       <StackLayout class="mainContent">
         <Label text="Имя ребенка" class="title-primary" />
         <TextField v-model="childName" hint="Кьюрио" class="nameInput" />
+        
         <Label text="Пол" class="title-primary" />
         <GridLayout columns="auto, auto" class="genderRow" horizontalAlignment="center">
           <StackLayout col="0" @tap="selectGender('boy')" class="genderItem">
-            <Image :src="selectedGender === 'boy' ? 'res://boy_selected' : 'res://boy'" class="genderImage" stretch="aspectFit" />
+            <Image :src="selectedGender === 'boy' ? 'res://boy_selected' : 'res://boy'" 
+                   class="genderImage" stretch="aspectFit" />
           </StackLayout>
           <StackLayout col="1" @tap="selectGender('girl')" class="genderItem">
-            <Image :src="selectedGender === 'girl' ? 'res://girl_selected' : 'res://girl'" class="genderImage" stretch="aspectFit" />
+            <Image :src="selectedGender === 'girl' ? 'res://girl_selected' : 'res://girl'" 
+                   class="genderImage" stretch="aspectFit" />
           </StackLayout>
         </GridLayout>
-        <StackLayout class="button-wrapper">
-          <GridLayout class="button-container" @tap="continuePressed">
-            <StackLayout class="button-shadow" />
-            <StackLayout class="button-main">
-              <Label text="Продолжить" class="button-text" />
-            </StackLayout>
-          </GridLayout>
-        </StackLayout>
+        
+        <!-- Кнопка "Продолжить" в стиле Welcome -->
+        <GridLayout class="continueBtn" columns="*, auto" @tap="continuePressed">
+          <Label text="Продолжить" class="continueBtnText" col="0" />
+        </GridLayout>
+        
         <StackLayout class="bottom-padding" />
       </StackLayout>
     </ScrollView>
