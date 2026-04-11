@@ -3,8 +3,10 @@ import App from './App.vue';
 
 import { GoogleSignin } from '@nativescript/google-signin';
 
+// Настройка Google Sign-In с Web Client ID
 GoogleSignin.configure({
-  clientId: "875785150570-g3u33eos249akrubsmo88jf7th72agvu.apps.googleusercontent.com"
+  clientId: "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com",
+  serverClientId: "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com"
 });
 
-createApp(App).start()
+createApp(App).start();

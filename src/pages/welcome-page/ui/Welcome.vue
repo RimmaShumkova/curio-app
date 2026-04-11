@@ -34,15 +34,16 @@ export default {
         this.$navigateTo(ChildProfile);
       } catch (error) {
         console.error('Ошибка входа:', error);
-        let message = 'Не удалось войти через Google. ';
-        if (error.message === 'DEVELOPER_ERROR') {
-          message += 'Проверьте настройки Google Cloud Console.';
-        } else if (error.message === 'SIGN_IN_REQUIRED') {
-          message += 'Добавьте Google аккаунт в настройках эмулятора.';
-        } else {
-          message += error.message;
-        }
-        alert(message);
+        // Временно закомментировано
+        // let message = 'Не удалось войти через Google. ';
+        // if (error.message === 'DEVELOPER_ERROR') {
+        //   message += 'Проверьте настройки Google Cloud Console.';
+        // } else if (error.message === 'SIGN_IN_REQUIRED') {
+        //   message += 'Добавьте Google аккаунт в настройках эмулятора.';
+        // } else {
+        //   message += error.message;
+        // }
+        // alert(message);
       }
     },
     onGuestLogin() {
