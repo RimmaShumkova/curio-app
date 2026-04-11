@@ -5,8 +5,8 @@ import { GoogleSignin } from '@nativescript/google-signin';
 
 // Настройка Google Sign-In с Web Client ID
 GoogleSignin.configure({
-  clientId: "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com",
-  serverClientId: "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com"
+  clientId: "286722580928-be92mmdc2afql0efj8f2jcqvt3hm2fg3.apps.googleusercontent.com",
+  serverClientId: "286722580928-be92mmdc2afql0efj8f2jcqvt3hm2fg3.apps.googleusercontent.com"
 });
 
 createApp(App).start();
