@@ -1,23 +1,45 @@
 <template>
   <Page actionBarHidden="true" class="page">
-    <GridLayout rows="*, auto" columns="*">
-      <Image row="0" rowSpan="2" col="0" src="res://forest" stretch="aspectFill" />
-      
-      <StackLayout row="0" col="0" class="topText">
-        <Label text="Читаем с Кьюрио" class="title" />
-      </StackLayout>
-      
-      <StackLayout row="1" col="0" class="bottomArea">
-        <GridLayout class="googleBtn" columns="auto, *" @tap="onGoogleLogin">
-          <Image src="res://icgoogle" class="googleIcon" />
-          <Label text="Войти через Google" class="googleBtnText" col="1" />
-        </GridLayout>
-        
-        <GridLayout class="btn-orange" columns="*, auto" @tap="onGuestLogin" style="margin-top: 16">
-          <Label text="Войти как гость" class="btn-orange-text" col="0" />
-        </GridLayout>
-      </StackLayout>
-    </GridLayout>
+
+    <AbsoluteLayout class="root">
+
+      <Image
+        src="res://forest"
+        stretch="aspectFill"
+        class="background"
+      />
+
+      <GridLayout rows="*, auto" columns="*" class="content">
+
+        <StackLayout row="0" class="topText">
+          <Label text="Читаем с Кьюрио" class="title" />
+        </StackLayout>
+
+        <StackLayout row="1" class="bottomArea">
+
+          <GridLayout class="googleBtn" columns="*, auto, *" @tap="onGoogleLogin">
+
+            <StackLayout col="0"></StackLayout>
+
+            <StackLayout col="1" orientation="horizontal" verticalAlignment="middle">
+              <Image src="res://icgoogle" class="googleIcon" />
+              <Label text="Войти через Google" class="googleBtnText" />
+            </StackLayout>
+
+            <StackLayout col="2"></StackLayout>
+
+          </GridLayout>
+
+          <GridLayout class="btn-orange guestBtn" columns="*" @tap="onGuestLogin">
+            <Label text="Войти как гость" class="btn-orange-text" />
+          </GridLayout>
+
+        </StackLayout>
+
+      </GridLayout>
+
+    </AbsoluteLayout>
+
   </Page>
 </template>
 
@@ -42,7 +64,6 @@ export default {
         });
 
         const data = await response.json();
-
         console.log("User from backend:", data);
 
         this.$navigateTo(ChildProfile);
@@ -51,6 +72,7 @@ export default {
         console.error("Ошибка входа:", error);
       }
     },
+
     onGuestLogin() {
       console.log('Вход как гость');
       this.$navigateTo(ChildProfile);
