@@ -30,20 +30,25 @@ export default {
     async onGoogleLogin() {
       try {
         const user = await GoogleSignin.signIn();
-        console.log('Успешный вход:', user);
+
+        const response = await fetch("http://10.0.2.2:3000/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            token: user.idToken
+          })
+        });
+
+        const data = await response.json();
+
+        console.log("User from backend:", data);
+
         this.$navigateTo(ChildProfile);
+
       } catch (error) {
-        console.error('Ошибка входа:', error);
-        // Временно закомментировано
-        // let message = 'Не удалось войти через Google. ';
-        // if (error.message === 'DEVELOPER_ERROR') {
-        //   message += 'Проверьте настройки Google Cloud Console.';
-        // } else if (error.message === 'SIGN_IN_REQUIRED') {
-        //   message += 'Добавьте Google аккаунт в настройках эмулятора.';
-        // } else {
-        //   message += error.message;
-        // }
-        // alert(message);
+        console.error("Ошибка входа:", error);
       }
     },
     onGuestLogin() {
