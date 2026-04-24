@@ -47,6 +47,22 @@
   margin-top: 16;
 }
 
+.btn-orange {
+  background-color: #F68B3C;
+  border-radius: 20;
+  padding: 12 20;
+  width: 340;
+  elevation: 2;
+  text-align: center;
+  vertical-align: center;
+}
+
+.btn-orange-text {
+  color: white;
+  font-size: 18;
+  text-align: center;
+}
+
 @media (max-width: 480) {
   .title {
     font-size: 36;
