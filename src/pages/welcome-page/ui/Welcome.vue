@@ -51,20 +51,21 @@ export default {
   methods: {
     async onGoogleLogin() {
       try {
+        await GoogleSignin.configure({})
         const user = await GoogleSignin.signIn();
 
-        const response = await fetch("http://10.0.2.2:3000/auth/google", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            token: user.idToken
-          })
-        });
+        // const response = await fetch("http://10.0.2.2:3000/auth/google", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json"
+        //   },
+        //   body: JSON.stringify({
+        //     token: user.idToken
+        //   })
+        // });
 
-        const data = await response.json();
-        console.log("User from backend:", data);
+        // const data = await response.json();
+        // console.log("User from backend:", data);
 
         this.$navigateTo(ChildProfile);
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "286722580928",
+    "project_id": "curio-3c9d0",
+    "storage_bucket": "curio-3c9d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286722580928:android:852009468801fe3cd6e825",
+        "android_client_info": {
+          "package_name": "org.nativescript.myAwesomeApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjku-cHQijySNW_U2sWhbQM-tgyGta7pI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

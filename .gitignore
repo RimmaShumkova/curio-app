@@ -32,3 +32,5 @@ platforms
 hooks
 .gradle
 dist
+
+App_Resources/Android/google-services.json
