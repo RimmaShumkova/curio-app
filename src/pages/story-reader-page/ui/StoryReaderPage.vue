@@ -39,6 +39,7 @@
 
 <script>
 import { storyModel } from '../../../entities/story/model/story';
+import { userModel } from '../../../entities/user/model/user'; // Добавляем импорт userModel
 import HomePage from '../../home-page/ui/HomePage.vue';
 
 export default {
@@ -84,7 +85,10 @@ export default {
         this.currentEpisodeIndex--;
       }
     },
-    finishReading() {
+    async finishReading() {
+      // Отмечаем историю как прочитанную
+      await userModel.addCompletedStory(this.storyId);
+      
       alert('Поздравляем! Вы прочитали историю!');
       this.goBack();
     },

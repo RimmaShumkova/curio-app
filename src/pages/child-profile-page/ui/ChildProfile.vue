@@ -31,6 +31,7 @@
 import HomePage from '../../home-page/ui/HomePage.vue';
 import { TRANSITIONS } from '../../../shared/lib/constants';
 import { childModel } from '../../../entities/child/model/child';
+import { userModel } from '../../../entities/user/model/user';
 
 export default {
   data() {
@@ -39,23 +40,35 @@ export default {
       selectedGender: ''
     };
   },
+  async mounted() {
+    // Загружаем сохраненные данные пользователя
+    const user = userModel.load();
+    if (user && user.childName) {
+      this.childName = user.childName;
+      this.selectedGender = user.childGender;
+    }
+  },
   methods: {
     selectGender(gender) {
       this.selectedGender = gender;
     },
-    continuePressed() {
+    async continuePressed() {
       if (!this.childName.trim()) {
         alert('Пожалуйста, введите имя ребенка');
         return;
       }
+      
+      // Сохраняем в childModel
       childModel.save({
         name: this.childName,
         gender: this.selectedGender
       });
+      
+      // Сохраняем в userModel и на сервер
+      await userModel.updateChildProfile(this.childName, this.selectedGender);
+      
       this.$navigateTo(HomePage, TRANSITIONS.slide);
     }
   }
 };
 </script>
-
-<style scoped src="./ChildProfile.css" />
