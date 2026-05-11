@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "286722580928",
-    "project_id": "curio-3c9d0",
-    "storage_bucket": "curio-3c9d0.firebasestorage.app"
+    "project_number": "178781864041",
+    "project_id": "read-with-curio-app",
+    "storage_bucket": "read-with-curio-app.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:286722580928:android:852009468801fe3cd6e825",
+        "mobilesdk_app_id": "1:178781864041:android:05c122405026dda01622f8",
         "android_client_info": {
           "package_name": "org.nativescript.myAwesomeApp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "178781864041-hnnnhkr41q9sq1l4j9nafhvci4u9cf59.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.nativescript.myAwesomeApp",
+            "certificate_hash": "31665fd13c14983688e14c572ff2b370d4ea07c4"
+          }
+        },
+        {
+          "client_id": "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBjku-cHQijySNW_U2sWhbQM-tgyGta7pI"
+          "current_key": "AIzaSyAAK2Oyr3OavonnaSB_IkoC1TSLV4PBSJI"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

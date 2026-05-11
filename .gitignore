@@ -34,3 +34,4 @@ hooks
 dist
 
 App_Resources/Android/google-services.json
+App_Resources/Android/src/google-services.json
