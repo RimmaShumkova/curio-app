@@ -1,4 +1,5 @@
 // backend/server.js
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -10,13 +11,11 @@ app.use(cors());
 app.use(express.json());
 
 // ─── Google OAuth клиент ──────────────────────────────────────────────────────
-const googleClient = new OAuth2Client(
-  "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com"
-);
+const googleClient = new OAuth2Client(process.env.GOOGLE_WEB_CLIENT_ID);
 
 // ─── Подключение к MongoDB Atlas ──────────────────────────────────────────────
 mongoose
-  .connect("mongodb+srv://strawbebby:12345@curio.lu5yvrf.mongodb.net/curio", {
+  .connect(process.env.MONGODB_URI, {
     tls: true,
     tlsAllowInvalidCertificates: true,
   })
@@ -91,10 +90,9 @@ app.post("/auth/google", async (req, res) => {
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: [
-        "178781864041-hnnnhkr41q9sq1l4j9nafhvci4u9cf59.apps.googleusercontent.com",
-        "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com",
+        process.env.GOOGLE_ANDROID_CLIENT_ID,
+        process.env.GOOGLE_WEB_CLIENT_ID,
       ],
-      // Разрешаем расхождение времени до 1 часа (для эмуляторов)
       clockSkew: 3600,
     });
 
@@ -216,7 +214,7 @@ app.post("/progress/:storyId", requireAuth, async (req, res) => {
 });
 
 // ─── Запуск сервера ───────────────────────────────────────────────────────────
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
 });

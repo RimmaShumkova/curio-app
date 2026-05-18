@@ -1,0 +1,10 @@
+# backend/.env
+# Этот файл НЕ заливается на GitHub (добавлен в .gitignore)
+# Замени НОВЫЙ_ПАРОЛЬ на свой пароль от MongoDB
+
+MONGODB_URI=mongodb+srv://strawbebby:12345@curio.lu5yvrf.mongodb.net/curio
+
+GOOGLE_WEB_CLIENT_ID=178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com
+GOOGLE_ANDROID_CLIENT_ID=178781864041-hnnnhkr41q9sq1l4j9nafhvci4u9cf59.apps.googleusercontent.com
+
+PORT=3000
