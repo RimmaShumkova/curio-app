@@ -1,9 +1,13 @@
 // src/shared/machines/authMachine.ts
-import { setup, assign, fromPromise } from 'xstate';
-import { loginWithGoogleApi } from '../api/client';
-import { userModel, User } from '../../entities/user/model/user';
+//
+// XState v5 использует AbortController внутри fromPromise,
+// которого нет в NativeScript. Поэтому API-вызов делается
+// снаружи (в Welcome.vue), а машина получает готового пользователя
+// через событие LOGIN_SUCCESS.
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+import { setup, assign } from 'xstate';
+import { userModel, User } from '../../entities/user/model/user';
+import { db } from '../lib/database';
 
 interface AuthContext {
   user: User | null;
@@ -11,11 +15,9 @@ interface AuthContext {
 }
 
 type AuthEvent =
-  | { type: 'LOGIN_GOOGLE'; token: string }
-  | { type: 'LOGOUT' }
-  | { type: 'RETRY' };
-
-// ─── Machine ─────────────────────────────────────────────────────────────────
+  | { type: 'LOGIN_SUCCESS'; user: User }
+  | { type: 'LOGIN_ERROR'; error: string }
+  | { type: 'LOGOUT' };
 
 const authMachineConfig = setup({
   types: {
@@ -23,39 +25,20 @@ const authMachineConfig = setup({
     events: {} as AuthEvent,
   },
 
-  actors: {
-    /**
-     * Вызывает API авторизации через Google и сохраняет пользователя локально
-     */
-    loginWithGoogle: fromPromise(async ({ input }: { input: { token: string } }) => {
-      const userData = await loginWithGoogleApi(input.token);
-
-      const user: User = {
-        id: userData.googleId || userData._id,
-        name: userData.name,
-        email: userData.email,
-        socialProvider: 'google',
-      };
-
-      userModel.save(user);
-      return user;
-    }),
-  },
-
   actions: {
-    clearUser: () => userModel.clear(),
-
     assignUser: assign({
-      user: ({ event }) => (event as any).output as User,
+      user: ({ event }) => (event as Extract<AuthEvent, { type: 'LOGIN_SUCCESS' }>).user,
       error: null,
     }),
 
     assignError: assign({
-      error: ({ event }) => {
-        const err = (event as any).error;
-        return err instanceof Error ? err.message : 'Ошибка авторизации';
-      },
+      error: ({ event }) => (event as Extract<AuthEvent, { type: 'LOGIN_ERROR' }>).error,
     }),
+
+    clearUser: () => {
+      userModel.clear();
+      db.clearUser();
+    },
   },
 
   guards: {
@@ -73,54 +56,25 @@ export const authMachine = authMachineConfig.createMachine({
   },
 
   states: {
-    /**
-     * checking — проверяем, есть ли сохранённый пользователь при старте
-     */
+    // Проверяем локальное хранилище при старте
     checking: {
       always: [
         {
           target: 'authenticated',
           guard: 'isAlreadyLoggedIn',
-          actions: assign({
-            user: () => userModel.load(),
-          }),
+          actions: assign({ user: () => userModel.load() }),
         },
         { target: 'unauthenticated' },
       ],
     },
 
-    /**
-     * unauthenticated — пользователь не вошёл
-     */
     unauthenticated: {
       on: {
-        LOGIN_GOOGLE: 'loggingIn',
+        LOGIN_SUCCESS: { target: 'authenticated', actions: 'assignUser' },
+        LOGIN_ERROR:   { target: 'error',         actions: 'assignError' },
       },
     },
 
-    /**
-     * loggingIn — идёт процесс входа через Google
-     */
-    loggingIn: {
-      invoke: {
-        src: 'loginWithGoogle',
-        input: ({ event }) => ({
-          token: (event as Extract<AuthEvent, { type: 'LOGIN_GOOGLE' }>).token,
-        }),
-        onDone: {
-          target: 'authenticated',
-          actions: 'assignUser',
-        },
-        onError: {
-          target: 'error',
-          actions: 'assignError',
-        },
-      },
-    },
-
-    /**
-     * authenticated — пользователь авторизован
-     */
     authenticated: {
       on: {
         LOGOUT: {
@@ -130,13 +84,9 @@ export const authMachine = authMachineConfig.createMachine({
       },
     },
 
-    /**
-     * error — ошибка при авторизации
-     */
     error: {
       on: {
-        LOGIN_GOOGLE: 'loggingIn',
-        RETRY: 'unauthenticated',
+        LOGIN_SUCCESS: { target: 'authenticated', actions: 'assignUser' },
       },
     },
   },

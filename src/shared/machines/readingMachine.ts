@@ -2,26 +2,20 @@
 import { setup, assign } from 'xstate';
 import { Story, Episode } from '../../entities/story/model/story';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 interface ReadingContext {
   story: Story | null;
   currentEpisodeIndex: number;
 }
 
 type ReadingEvent =
-  | { type: 'START'; story: Story }
+  | { type: 'START'; story: Story; savedEpisodeIndex?: number }
   | { type: 'NEXT' }
   | { type: 'PREV' }
   | { type: 'FINISH' }
   | { type: 'RESET' };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 const getMaxIndex = (story: Story | null): number =>
   Math.max((story?.episodes.length || 1) - 1, 0);
-
-// ─── Machine ─────────────────────────────────────────────────────────────────
 
 const readingMachineConfig = setup({
   types: {
@@ -31,8 +25,13 @@ const readingMachineConfig = setup({
 
   actions: {
     assignStory: assign({
-      story: ({ event }) => (event as Extract<ReadingEvent, { type: 'START' }>).story,
-      currentEpisodeIndex: 0,
+      story: ({ event }) =>
+        (event as Extract<ReadingEvent, { type: 'START' }>).story,
+      // Если есть сохранённый прогресс с сервера — начинаем с него
+      currentEpisodeIndex: ({ event }) => {
+        const e = event as Extract<ReadingEvent, { type: 'START' }>;
+        return e.savedEpisodeIndex ?? 0;
+      },
     }),
 
     goToNext: assign({
@@ -52,20 +51,12 @@ const readingMachineConfig = setup({
   },
 
   guards: {
-    /**
-     * Переход NEXT разрешён, только если текущий эпизод не последний
-     */
     canGoNext: ({ context }) =>
       context.currentEpisodeIndex < getMaxIndex(context.story),
 
-    /**
-     * Переход PREV разрешён, только если текущий эпизод не первый
-     */
-    canGoPrev: ({ context }) => context.currentEpisodeIndex > 0,
+    canGoPrev: ({ context }) =>
+      context.currentEpisodeIndex > 0,
 
-    /**
-     * Можно завершить только находясь на последнем эпизоде
-     */
     isLastEpisode: ({ context }) =>
       context.currentEpisodeIndex === getMaxIndex(context.story),
   },
@@ -81,64 +72,31 @@ export const readingMachine = readingMachineConfig.createMachine({
   },
 
   states: {
-    /**
-     * idle — ожидание начала чтения
-     */
     idle: {
       on: {
-        START: {
-          target: 'reading',
-          actions: 'assignStory',
-        },
+        START: { target: 'reading', actions: 'assignStory' },
       },
     },
 
-    /**
-     * reading — активный процесс чтения
-     * Навигация между эпизодами, завершение истории
-     */
     reading: {
       on: {
-        NEXT: {
-          guard: 'canGoNext',
-          actions: 'goToNext',
-        },
-        PREV: {
-          guard: 'canGoPrev',
-          actions: 'goToPrev',
-        },
-        FINISH: {
-          guard: 'isLastEpisode',
-          target: 'finished',
-        },
-        // Позволяем принудительно завершить (например, кнопка "Домой")
-        RESET: {
-          target: 'idle',
-          actions: 'reset',
-        },
+        NEXT:   { guard: 'canGoNext',    actions: 'goToNext' },
+        PREV:   { guard: 'canGoPrev',    actions: 'goToPrev' },
+        FINISH: { guard: 'isLastEpisode', target: 'finished' },
+        RESET:  { target: 'idle',        actions: 'reset' },
       },
     },
 
-    /**
-     * finished — история прочитана до конца
-     */
     finished: {
       on: {
-        RESET: {
-          target: 'idle',
-          actions: 'reset',
-        },
-        // Перечитать ту же историю
-        START: {
-          target: 'reading',
-          actions: 'assignStory',
-        },
+        RESET: { target: 'idle',    actions: 'reset' },
+        START: { target: 'reading', actions: 'assignStory' },
       },
     },
   },
 });
 
-// ─── Selectors (computed helpers для компонентов) ─────────────────────────────
+// ─── Selectors ────────────────────────────────────────────────────────────────
 
 export function selectCurrentEpisode(context: ReadingContext): Episode | null {
   if (!context.story) return null;

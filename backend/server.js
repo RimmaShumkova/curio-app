@@ -1,22 +1,101 @@
+// backend/server.js
+
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
 const { OAuth2Client } = require("google-auth-library");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const client = new OAuth2Client("ТВОЙ_CLIENT_ID");
+// ─── Google OAuth клиент ──────────────────────────────────────────────────────
+const googleClient = new OAuth2Client(
+  "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com"
+);
 
-const User = require("./models/User"); // добавить вверху
+// ─── Подключение к MongoDB Atlas ──────────────────────────────────────────────
+mongoose
+  .connect("mongodb+srv://strawbebby:12345@curio.lu5yvrf.mongodb.net/curio", {
+    tls: true,
+    tlsAllowInvalidCertificates: true,
+  })
+  .then(() => console.log("✅ MongoDB подключена"))
+  .catch((err) => console.error("❌ Ошибка MongoDB:", err));
+
+// ═════════════════════════════════════════════════════════════════════════════
+// МОДЕЛИ
+// ═════════════════════════════════════════════════════════════════════════════
+
+const userSchema = new mongoose.Schema({
+  googleId:  { type: String, required: true, unique: true },
+  email:     { type: String, required: true },
+  name:      { type: String, required: true },
+  picture:   { type: String, default: "" },
+  createdAt: { type: Date,   default: Date.now },
+});
+
+const User = mongoose.model("User", userSchema);
+
+const childSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
+  name:   { type: String, required: true },
+  gender: { type: String, enum: ["boy", "girl", ""], default: "" },
+});
+
+const Child = mongoose.model("Child", childSchema);
+
+const progressSchema = new mongoose.Schema({
+  userId:       { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  storyId:      { type: String,  required: true },
+  episodeIndex: { type: Number,  default: 0 },
+  isCompleted:  { type: Boolean, default: false },
+  lastReadAt:   { type: Date,    default: Date.now },
+});
+
+progressSchema.index({ userId: 1, storyId: 1 }, { unique: true });
+
+const Progress = mongoose.model("Progress", progressSchema);
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MIDDLEWARE
+// ═════════════════════════════════════════════════════════════════════════════
+
+async function requireAuth(req, res, next) {
+  const googleId = req.headers["x-google-id"];
+  if (!googleId) {
+    return res.status(401).json({ error: "Не авторизован" });
+  }
+
+  const user = await User.findOne({ googleId });
+  if (!user) {
+    return res.status(401).json({ error: "Пользователь не найден" });
+  }
+
+  req.user = user;
+  next();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// РОУТЫ — Авторизация
+// ═════════════════════════════════════════════════════════════════════════════
 
 app.post("/auth/google", async (req, res) => {
   const { token } = req.body;
 
+  if (!token) {
+    return res.status(400).json({ error: "Токен не передан" });
+  }
+
   try {
-    const ticket = await client.verifyIdToken({
+    const ticket = await googleClient.verifyIdToken({
       idToken: token,
-      audience: "ТВОЙ_CLIENT_ID"
+      audience: [
+        "178781864041-hnnnhkr41q9sq1l4j9nafhvci4u9cf59.apps.googleusercontent.com",
+        "178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com",
+      ],
+      // Разрешаем расхождение времени до 1 часа (для эмуляторов)
+      clockSkew: 3600,
     });
 
     const payload = ticket.getPayload();
@@ -24,30 +103,120 @@ app.post("/auth/google", async (req, res) => {
     let user = await User.findOne({ googleId: payload.sub });
 
     if (!user) {
-      user = new User({
+      user = await User.create({
         googleId: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        picture: payload.picture
+        email:    payload.email,
+        name:     payload.name,
+        picture:  payload.picture || "",
       });
-
-      await user.save();
+      console.log("✅ Новый пользователь:", user.name);
     }
 
-    res.json(user);
+    res.json({ user });
 
-  } catch (e) {
-    res.status(401).json({ error: "Invalid token" });
+  } catch (err) {
+    console.error("Ошибка верификации токена:", err.message);
+    res.status(401).json({ error: "Недействительный токен" });
   }
 });
 
-app.listen(3000, () => console.log("Server running on 3000"))
+// ═════════════════════════════════════════════════════════════════════════════
+// РОУТЫ — Профиль ребёнка
+// ═════════════════════════════════════════════════════════════════════════════
 
-const mongoose = require("mongoose");
+app.get("/child", requireAuth, async (req, res) => {
+  try {
+    const child = await Child.findOne({ userId: req.user._id });
+    if (!child) {
+      return res.status(404).json({ error: "Профиль не найден" });
+    }
+    res.json({ child });
+  } catch (err) {
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
 
-mongoose.connect("mongodb://127.0.0.1:27017/curio", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log(err));
+app.post("/child", requireAuth, async (req, res) => {
+  const { name, gender } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: "Имя обязательно" });
+  }
+
+  try {
+    const child = await Child.findOneAndUpdate(
+      { userId: req.user._id },
+      { name, gender: gender || "" },
+      { returnDocument: "after", upsert: true }
+    );
+    res.json({ child });
+  } catch (err) {
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
+
+// ═════════════════════════════════════════════════════════════════════════════
+// РОУТЫ — Прогресс чтения
+// ═════════════════════════════════════════════════════════════════════════════
+
+app.get("/progress", requireAuth, async (req, res) => {
+  try {
+    const progress = await Progress.find({ userId: req.user._id });
+    res.json({ progress });
+  } catch (err) {
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
+
+app.get("/progress/:storyId", requireAuth, async (req, res) => {
+  try {
+    const progress = await Progress.findOne({
+      userId:  req.user._id,
+      storyId: req.params.storyId,
+    });
+
+    if (!progress) {
+      return res.json({
+        progress: {
+          storyId:      req.params.storyId,
+          episodeIndex: 0,
+          isCompleted:  false,
+          lastReadAt:   null,
+        },
+      });
+    }
+
+    res.json({ progress });
+  } catch (err) {
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
+
+app.post("/progress/:storyId", requireAuth, async (req, res) => {
+  const { episodeIndex, isCompleted } = req.body;
+
+  try {
+    const progress = await Progress.findOneAndUpdate(
+      {
+        userId:  req.user._id,
+        storyId: req.params.storyId,
+      },
+      {
+        episodeIndex: episodeIndex ?? 0,
+        isCompleted:  isCompleted  ?? false,
+        lastReadAt:   new Date(),
+      },
+      { returnDocument: "after", upsert: true }
+    );
+
+    res.json({ progress });
+  } catch (err) {
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
+
+// ─── Запуск сервера ───────────────────────────────────────────────────────────
+const PORT = 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
+});
