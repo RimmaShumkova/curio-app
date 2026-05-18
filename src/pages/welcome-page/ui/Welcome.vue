@@ -46,16 +46,16 @@
 import { useSelector } from '@xstate/vue';
 import { GoogleSignin } from '@nativescript/google-signin';
 
-import { authActor } from '../../../shared/machines/actors';
-import { loginWithGoogleApi } from '../../../shared/api/client';
+import { authActor, childActor } from '../../../shared/machines/actors';
+import { loginWithGoogleApi, fetchChildApi } from '../../../shared/api/client';
 import { userModel } from '../../../entities/user/model/user';
 import { db } from '../../../shared/lib/database';
 
 import ChildProfile from '../../child-profile-page/ui/ChildProfile.vue';
+import HomePage from '../../home-page/ui/HomePage.vue';
 
 export default {
   setup() {
-    // Подписываемся на authActor — следим за состоянием входа
     const snapshot = useSelector(authActor, (s) => s);
     return { snapshot };
   },
@@ -68,10 +68,6 @@ export default {
 
   watch: {
     snapshot(newSnapshot) {
-      // Как только authMachine перешёл в authenticated — идём дальше
-      if (newSnapshot.matches('authenticated')) {
-        this.$navigateTo(ChildProfile, { clearHistory: true });
-      }
       if (newSnapshot.matches('error')) {
         alert('Ошибка входа. Попробуйте ещё раз.');
       }
@@ -87,14 +83,9 @@ export default {
         await GoogleSignin.configure({
           serverClientId: '178781864041-4ahca5mb40jukerq7296mvb916b7jst7.apps.googleusercontent.com',
         });
-        console.log('1. configure готов');
 
         await GoogleSignin.signIn();
-        console.log('2. signIn готов');
-
         const tokens = await GoogleSignin.getTokens();
-        console.log('3. tokens получены, idToken:', !!tokens.idToken);
-        console.log('4. первые символы токена:', tokens.idToken?.substring(0, 20));
 
         if (!tokens.idToken) {
           alert('Не удалось получить токен. Попробуйте ещё раз.');
@@ -102,8 +93,8 @@ export default {
           return;
         }
 
+        // 1. Авторизуемся на сервере
         const response = await loginWithGoogleApi(tokens.idToken);
-        console.log('4. ответ сервера:', JSON.stringify(response));
         const serverUser = response.user;
 
         const user = {
@@ -115,8 +106,24 @@ export default {
 
         userModel.save(user);
         db.saveUser(user);
-
         authActor.send({ type: 'LOGIN_SUCCESS', user });
+
+        // 2. Пробуем загрузить профиль ребёнка с сервера
+        try {
+          const childResponse = await fetchChildApi(user.id);
+          const serverChild = childResponse.child;
+
+          // Профиль найден на сервере — сохраняем локально и идём на главную
+          const profile = { name: serverChild.name, gender: serverChild.gender };
+          db.saveChild(profile);
+          childActor.send({ type: 'SAVE', profile });
+
+          this.$navigateTo(HomePage, { clearHistory: true });
+
+        } catch (e) {
+          // Профиля нет на сервере — первый вход, идём заполнять
+          this.$navigateTo(ChildProfile, { clearHistory: true });
+        }
 
       } catch (error) {
         console.error('Ошибка Google Sign-In:', error);
@@ -128,7 +135,6 @@ export default {
     },
 
     onGuestLogin() {
-      // Гость не идёт через сервер — только локальное хранение
       const guestUser = {
         id: `guest_${Date.now()}`,
         name: 'Гость',

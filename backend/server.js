@@ -1,5 +1,5 @@
-// backend/server.js
 require("dotenv").config();
+console.log('ENV CHECK:', process.env.MONGODB_URI); // добавь
 
 const express = require("express");
 const cors = require("cors");
