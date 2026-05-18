@@ -1,74 +1,108 @@
-import { setup, fromPromise, assign } from "xstate";
-import { storyModel, type Story } from "../../entities/story/model/story";
+// src/shared/machines/storiesMachine.ts
+//
+// appSettings (используемый в db) — синхронное API.
+// Поэтому загрузку делаем синхронно через entry + always,
+// без fromPromise (который добавляет лишнюю асинхронность).
+
+import { setup, assign } from 'xstate';
+import { Story } from '../../entities/story/model/story';
+import { db } from '../lib/database';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface StoriesContext {
   stories: Story[];
-  errorMessage: string | null;
+  readStoryIds: string[];
+  error: string | null;
 }
 
-// Актор для загрузки историй
-const fetchStoriesActor = fromPromise(async () => {
-  // Имитация задержки сети
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return storyModel.getAll();
-});
+type StoriesEvent =
+  | { type: 'LOAD' }
+  | { type: 'RELOAD' }
+  | { type: 'MARK_READ'; storyId: string }
+  | { type: 'UNLOCK'; storyId: string };
 
-export const storiesMachine = setup({
+// ─── Machine ─────────────────────────────────────────────────────────────────
+
+const storiesMachineConfig = setup({
   types: {
     context: {} as StoriesContext,
-    events: {} as 
-      | { type: "FETCH" }
-      | { type: "RETRY" }
-      | { type: "REFRESH" }
+    events: {} as StoriesEvent,
   },
-  actors: {
-    fetchStories: fetchStoriesActor
-  },
+
   actions: {
-    setStories: assign({
-      stories: ({ event }) => (event as any).output,
-      errorMessage: null
+    /**
+     * Синхронно читаем из db и кладём в context.
+     * Вызывается как entry-действие состояния loading.
+     */
+    loadFromDb: assign({
+      stories: () => {
+        db.initStories();
+        return db.getAllStories();
+      },
+      readStoryIds: () => db.getReadStories(),
+      error: null,
     }),
-    setError: assign({
-      errorMessage: ({ event }) => (event as any).error?.message || "Ошибка загрузки"
+
+    markStoryRead: assign({
+      readStoryIds: ({ context, event }) => {
+        const id = (event as Extract<StoriesEvent, { type: 'MARK_READ' }>).storyId;
+        db.markAsRead(id);
+        return context.readStoryIds.includes(id)
+          ? context.readStoryIds
+          : [...context.readStoryIds, id];
+      },
     }),
-    clearError: assign({ errorMessage: null })
-  }
-}).createMachine({
-  id: "stories",
-  initial: "idle",
+
+    unlockStory: assign({
+      stories: ({ context, event }) => {
+        const id = (event as Extract<StoriesEvent, { type: 'UNLOCK' }>).storyId;
+        db.unlockStory(id);
+        return context.stories.map((s) =>
+          s.id === id ? { ...s, isLocked: false } : s
+        );
+      },
+    }),
+  },
+});
+
+export const storiesMachine = storiesMachineConfig.createMachine({
+  id: 'stories',
+  initial: 'idle',
+
   context: {
     stories: [],
-    errorMessage: null
+    readStoryIds: [],
+    error: null,
   },
+
   states: {
+    /**
+     * idle — ждём LOAD
+     */
     idle: {
-      on: { FETCH: "loading" }
+      on: {
+        LOAD: 'loading',
+      },
     },
+
+    /**
+     * loading — синхронно загружаем через entry, сразу переходим в loaded
+     */
     loading: {
-      invoke: {
-        src: "fetchStories",
-        onDone: {
-          target: "success",
-          actions: "setStories"
-        },
-        onError: {
-          target: "failure",
-          actions: "setError"
-        }
-      }
+      entry: 'loadFromDb',
+      always: 'loaded',
     },
-    success: {
-      on: { 
-        REFRESH: "loading",
-        FETCH: "loading"
-      }
+
+    /**
+     * loaded — истории в context, доступны операции
+     */
+    loaded: {
+      on: {
+        RELOAD: 'loading',
+        MARK_READ: { actions: 'markStoryRead' },
+        UNLOCK:    { actions: 'unlockStory' },
+      },
     },
-    failure: {
-      on: { 
-        RETRY: "loading",
-        FETCH: "loading"
-      }
-    }
-  }
+  },
 });

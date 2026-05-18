@@ -39,48 +39,71 @@
 </template>
 
 <script>
+import { useSelector } from '@xstate/vue';
+
+import { childActor, storiesActor, authActor } from '../../../shared/machines/actors';
+import { TRANSITIONS } from '../../../shared/lib/constants';
+import ActivityIndicator from '../../../shared/ui/ActivityIndicator.vue';
+
 import ChildProfile from '../../child-profile-page/ui/ChildProfile.vue';
 import Welcome from '../../welcome-page/ui/Welcome.vue';
 import StoryReaderPage from '../../story-reader-page/ui/StoryReaderPage.vue';
-import { storyModel } from '../../../entities/story/model/story';
-import { TRANSITIONS } from '../../../shared/lib/constants';
-import ActivityIndicator from '../../../shared/ui/ActivityIndicator.vue';
-import { childModel } from '../../../entities/child/model/child';
 
 export default {
   components: {
-    ActivityIndicator
+    ActivityIndicator,
   },
-  data() {
-    return {
-      childName: 'Кьюрио',
-      stories: [],
-      isLoading: true
-    };
+
+  setup() {
+    const childSnapshot   = useSelector(childActor,   (s) => s);
+    const storiesSnapshot = useSelector(storiesActor, (s) => s);
+    const childSend   = (event) => childActor.send(event);
+    const storiesSend = (event) => storiesActor.send(event);
+    return { childSnapshot, childSend, storiesSnapshot, storiesSend };
   },
+
+  computed: {
+    /** Имя ребёнка из childActor */
+    childName() {
+      return this.childSnapshot.context.profile?.name || 'Кьюрио';
+    },
+
+    /** Список историй из storiesActor */
+    stories() {
+      return this.storiesSnapshot.context.stories;
+    },
+
+    /** Показывать лоадер пока истории грузятся */
+    isLoading() {
+      return this.storiesSnapshot.matches('loading') || this.storiesSnapshot.matches('idle');
+    },
+  },
+
   mounted() {
-    const profile = childModel.load();
-    if (profile.name) {
-      this.childName = profile.name;
-    }
-    
-    this.isLoading = true;
-    setTimeout(() => {
-      this.stories = storyModel.getAll();
-      this.isLoading = false;
-    }, 500);
+    // Запускаем загрузку историй (idle → loading → loaded)
+    this.storiesSend({ type: 'LOAD' });
   },
+
   methods: {
     goToSettings() {
-      this.$navigateTo(ChildProfile, TRANSITIONS.slide);
-    },
-    logout() {
-      childModel.clear();
-      this.$navigateTo(Welcome, {
-        clearHistory: true,
-        ...TRANSITIONS.fade
+      // Открываем ChildProfile в режиме настроек
+      this.$navigateTo(ChildProfile, {
+        props: { isSettingsMode: true },
+        ...TRANSITIONS.slide,
       });
     },
+
+    logout() {
+      // Сбрасываем профиль ребёнка и авторизацию
+      this.childSend({ type: 'CLEAR' });
+      authActor.send({ type: 'LOGOUT' });
+
+      this.$navigateTo(Welcome, {
+        clearHistory: true,
+        ...TRANSITIONS.fade,
+      });
+    },
+
     openStory(story) {
       if (story.isLocked) {
         alert('Эта история пока недоступна');
@@ -88,10 +111,10 @@ export default {
       }
       this.$navigateTo(StoryReaderPage, {
         props: { storyId: story.id },
-        ...TRANSITIONS.slide
+        ...TRANSITIONS.slide,
       });
-    }
-  }
+    },
+  },
 };
 </script>
 

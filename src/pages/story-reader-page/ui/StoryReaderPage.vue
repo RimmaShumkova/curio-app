@@ -1,177 +1,181 @@
 <template>
   <Page actionBarHidden="true">
-    <GridLayout columns="auto, *" rows="*, auto">
-      
-      <StackLayout col="0" row="0" class="sideButtons">
-        <Image src="res://home_button" class="homeButton" @tap="goBack" />
+    <!--
+      GridLayout: 2 строки
+        row 0 (*) — изображение + оверлей верхних контролов
+        row 1 (auto) — нижняя зона: стрелки + карточка с текстом
+    -->
+    <GridLayout rows="*, auto">
+
+      <!-- ── Фоновое изображение (перекрывает обе строки) ─────────────── -->
+      <Image
+        row="0" rowSpan="2" col="0"
+        :src="currentEpisode ? currentEpisode.imageUrl : 'res://forest'"
+        class="storyBackground"
+        stretch="aspectFill"
+      />
+
+      <!-- ── Верхний оверлей: кнопка домой + счётчик эпизодов ─────────── -->
+      <StackLayout row="0" col="0" class="topControls">
+        <Image
+          src="res://home_button"
+          class="homeBtn"
+          @tap="goBack"
+        />
+        <Label
+          v-if="isReading"
+          :text="`${currentEpisodeIndex + 1}/${totalEpisodes}`"
+          class="episodePill"
+        />
       </StackLayout>
-      
-      <Image row="0" rowSpan="2" col="0" colSpan="2" 
-             :src="currentEpisode?.imageUrl || 'res://forest'" 
-             stretch="aspectFill" />
-      
-      <StackLayout row="1" col="0" colSpan="2" class="textPanel" v-if="story">
-        <ScrollView>
-          <Label :text="currentEpisode?.text || ''" class="storyText" textWrap="true" />
-        </ScrollView>
-        
-        <GridLayout columns="auto, *, auto" class="navControls">
-          <StackLayout col="0" class="navArrow" @tap="prevEpisode">
-            <Label text="←" class="arrowIcon" />
+
+      <!-- ── Нижняя зона: стрелки + карточка ─────────────────────────── -->
+      <GridLayout
+        v-if="isReading"
+        row="1" col="0"
+        columns="auto, *, auto"
+        class="bottomRow"
+      >
+
+        <!-- Стрелка НАЗАД -->
+        <StackLayout col="0" class="navArrowWrap" @tap="prevEpisode">
+          <StackLayout :class="canGoPrev ? 'navArrow' : 'navArrowDisabled'">
+            <Label text="‹" :class="canGoPrev ? 'arrowIcon' : 'arrowIconDisabled'" />
           </StackLayout>
-          
-          <Label col="1" class="episodeCounter" 
-                 :text="`${currentEpisodeIndex + 1} / ${totalEpisodes}`" />
-          
-          <StackLayout col="2" class="navArrow" @tap="nextEpisode">
-            <Label text="→" class="arrowIcon" />
-          </StackLayout>
-        </GridLayout>
-        
-        <StackLayout v-if="isLastEpisode" class="finishButton" @tap="finishReading">
-          <Label text="Закончить историю" class="finishText" />
         </StackLayout>
-      </StackLayout>
-      
+
+        <!-- Карточка с текстом -->
+        <StackLayout col="1" class="textCard">
+          <ScrollView>
+            <Label
+              :text="currentEpisode ? currentEpisode.text : ''"
+              class="storyText"
+              textWrap="true"
+            />
+          </ScrollView>
+
+          <!-- Кнопка завершения — только на последнем эпизоде -->
+          <StackLayout v-if="isLastEpisode" class="finishBtn" @tap="finishReading">
+            <Label text="Закончить историю" class="finishBtnText" />
+          </StackLayout>
+        </StackLayout>
+
+        <!-- Стрелка ВПЕРЁД -->
+        <StackLayout col="2" class="navArrowWrap" @tap="nextEpisode">
+          <StackLayout :class="!isLastEpisode ? 'navArrow' : 'navArrowDisabled'">
+            <Label text="›" :class="!isLastEpisode ? 'arrowIcon' : 'arrowIconDisabled'" />
+          </StackLayout>
+        </StackLayout>
+
+      </GridLayout>
+
     </GridLayout>
   </Page>
 </template>
 
 <script>
-import { storyModel } from '../../../entities/story/model/story';
+import { useMachine } from '@xstate/vue';
+import { readingMachine, selectCurrentEpisode, selectTotalEpisodes, selectIsLastEpisode, selectCanGoPrev } from '../../../shared/machines/readingMachine';
+import { db } from '../../../shared/lib/database';
 import HomePage from '../../home-page/ui/HomePage.vue';
 
 export default {
   props: {
     storyId: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
-  data() {
-    return {
-      story: null,
-      currentEpisodeIndex: 0
-    };
+
+  setup() {
+    // Подключаем readingMachine через @xstate/vue
+    const { snapshot, send } = useMachine(readingMachine);
+    return { snapshot, send };
   },
+
   computed: {
-    totalEpisodes() {
-      return this.story?.episodes.length || 0;
+    /** Текущее состояние машины */
+    machineState() {
+      return this.snapshot;
     },
+
+    /** Машина находится в состоянии чтения */
+    isReading() {
+      return this.machineState.matches('reading');
+    },
+
+    /** Машина находится в состоянии "завершено" */
+    isFinished() {
+      return this.machineState.matches('finished');
+    },
+
+    /** Контекст машины */
+    ctx() {
+      return this.machineState.context;
+    },
+
+    currentEpisodeIndex() {
+      return this.ctx.currentEpisodeIndex;
+    },
+
     currentEpisode() {
-      if (!this.story) return null;
-      return this.story.episodes[this.currentEpisodeIndex];
+      return selectCurrentEpisode(this.ctx);
     },
+
+    totalEpisodes() {
+      return selectTotalEpisodes(this.ctx);
+    },
+
     isLastEpisode() {
-      return this.currentEpisodeIndex === this.totalEpisodes - 1;
-    }
+      return selectIsLastEpisode(this.ctx);
+    },
+
+    canGoPrev() {
+      return selectCanGoPrev(this.ctx);
+    },
   },
+
   mounted() {
-    this.story = storyModel.getById(this.storyId);
-    if (!this.story) {
+    // Получаем историю из БД и запускаем машину
+    const story = db.getStoryById(this.storyId);
+
+    if (!story) {
       alert('История не найдена');
       this.goBack();
+      return;
     }
+
+    this.send({ type: 'START', story });
   },
+
   methods: {
     nextEpisode() {
-      if (this.currentEpisodeIndex < this.totalEpisodes - 1) {
-        this.currentEpisodeIndex++;
-      }
+      this.send({ type: 'NEXT' });
     },
+
     prevEpisode() {
-      if (this.currentEpisodeIndex > 0) {
-        this.currentEpisodeIndex--;
-      }
+      this.send({ type: 'PREV' });
     },
+
     finishReading() {
-      alert('Поздравляем! Вы прочитали историю!');
+      // Сохраняем в БД, что история прочитана
+      db.markAsRead(this.storyId);
+      this.send({ type: 'FINISH' });
+
+      alert('Поздравляем! Вы прочитали историю! 🎉');
       this.goBack();
     },
+
     goBack() {
+      // Сбрасываем машину перед уходом
+      this.send({ type: 'RESET' });
+
       this.$navigateTo(HomePage, {
-        transition: { name: "slide", duration: 300 }
+        transition: { name: 'slide', duration: 300 },
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
-<style scoped>
-.sideButtons {
-  width: auto;
-  padding-top: 8%;
-  padding-left: 15px;
-  padding-right: 10px;
-  align-items: center;
-  justify-content: flex-start;
-  z-index: 10;
-}
-
-.homeButton {
-  width: 50;
-  height: 50;
-  margin-bottom: 25;
-}
-
-.textPanel {
-  background-color: white;
-  border-top-left-radius: 30;
-  border-top-right-radius: 30;
-  padding: 20;
-  margin: 10;
-  z-index: 5;
-}
-
-.storyText {
-  font-size: 24;
-  color: #3D0000;
-  text-align: center;
-  padding: 15;
-}
-
-.navControls {
-  margin-top: 20;
-  margin-bottom: 10;
-  padding-left: 20;
-  padding-right: 20;
-}
-
-.navArrow {
-  width: 50;
-  height: 50;
-  background-color: #F68B3C;
-  border-radius: 25;
-  align-items: center;
-  justify-content: center;
-}
-
-.arrowIcon {
-  font-size: 28;
-  color: white;
-}
-
-.episodeCounter {
-  font-size: 16;
-  color: #3D0000;
-  text-align: center;
-  vertical-align: center;
-}
-
-.finishButton {
-  background-color: #4CAF50;
-  border-radius: 25;
-  padding: 12;
-  margin-top: 15;
-  margin-bottom: 10;
-  margin-left: 40;
-  margin-right: 40;
-  align-items: center;
-}
-
-.finishText {
-  font-size: 18;
-  font-weight: bold;
-  color: white;
-}
-</style>
+<style scoped src="./StoryReaderPage.css" />

@@ -1,0 +1,132 @@
+/* src/pages/story-reader-page/ui/StoryReaderPage.css */
+
+/* ─── Фон / Изображение истории ─────────────────────────────────────────── */
+
+.storyBackground {
+  stretch: aspectFill;
+}
+
+/* ─── Оверлей с кнопками (верхний левый угол) ───────────────────────────── */
+
+.topControls {
+  padding-top: 10%;
+  padding-left: 16;
+  z-index: 10;
+  horizontal-align: left;
+  vertical-align: top;
+}
+
+.homeBtn {
+  width: 52;
+  height: 52;
+}
+
+.episodePill {
+  background-color: white;
+  border-radius: 20;
+  padding-top: 5;
+  padding-bottom: 5;
+  padding-left: 14;
+  padding-right: 14;
+  font-size: 15;
+  font-weight: bold;
+  color: #3D0000;
+  text-align: center;
+  horizontal-align: left;
+}
+
+/* ─── Нижняя зона (стрелки + карточка с текстом) ───────────────────────── */
+
+.bottomRow {
+  background-color: transparent;
+  padding-bottom: 8;
+  padding-top: 0;
+}
+
+/* ─── Стрелки навигации ─────────────────────────────────────────────────── */
+
+.navArrowWrap {
+  vertical-align: center;
+  margin-left: 6;
+  margin-right: 6;
+}
+
+.navArrow {
+  width: 46;
+  height: 46;
+  border-radius: 23;
+  background-color: rgba(255, 255, 255, 0.88);
+  align-items: center;
+  justify-content: center;
+}
+
+.navArrowDisabled {
+  width: 46;
+  height: 46;
+  border-radius: 23;
+  background-color: rgba(255, 255, 255, 0.35);
+  align-items: center;
+  justify-content: center;
+}
+
+.arrowIcon {
+  font-size: 30;
+  color: #3D0000;
+  text-align: center;
+  vertical-align: center;
+  font-weight: bold;
+}
+
+.arrowIconDisabled {
+  font-size: 30;
+  color: rgba(61, 0, 0, 0.3);
+  text-align: center;
+  vertical-align: center;
+  font-weight: bold;
+}
+
+/* ─── Белая карточка с текстом истории ─────────────────────────────────── */
+
+.textCard {
+  background-color: rgba(255, 255, 255, 0.96);
+  border-top-left-radius: 28;
+  border-top-right-radius: 28;
+  border-bottom-left-radius: 28;
+  border-bottom-right-radius: 28;
+  padding-top: 22;
+  padding-bottom: 18;
+  padding-left: 18;
+  padding-right: 18;
+  margin-top: 0;
+}
+
+.storyText {
+  font-size: 22;
+  color: #3D0000;
+  text-align: center;
+  line-height: 1.5;
+  padding-left: 6;
+  padding-right: 6;
+}
+
+/* ─── Кнопка завершения ─────────────────────────────────────────────────── */
+
+.finishBtn {
+  background-color: #4CAF50;
+  border-radius: 25;
+  padding-top: 12;
+  padding-bottom: 12;
+  padding-left: 30;
+  padding-right: 30;
+  margin-top: 16;
+  margin-left: 30;
+  margin-right: 30;
+  align-items: center;
+}
+
+.finishBtnText {
+  font-size: 17;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}

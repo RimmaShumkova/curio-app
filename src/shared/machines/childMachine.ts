@@ -1,76 +1,116 @@
-import { setup, assign } from "xstate";
-import { childModel, type ChildProfile } from "../../entities/child/model/child";
+// src/shared/machines/childMachine.ts
+import { setup, assign } from 'xstate';
+import { childModel, ChildProfile } from '../../entities/child/model/child';
+import { db } from '../lib/database';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface ChildContext {
-  profile: ChildProfile;
-  isSaved: boolean;
+  profile: ChildProfile | null;
+  error: string | null;
 }
 
-export const childMachine = setup({
+type ChildEvent =
+  | { type: 'SAVE'; profile: ChildProfile }
+  | { type: 'CLEAR' }
+  | { type: 'RELOAD' };
+
+// ─── Machine ─────────────────────────────────────────────────────────────────
+
+const childMachineConfig = setup({
   types: {
     context: {} as ChildContext,
-    events: {} as 
-      | { type: "UPDATE_NAME"; name: string }
-      | { type: "UPDATE_GENDER"; gender: "boy" | "girl" }
-      | { type: "SAVE" }
-      | { type: "RESET" }
-      | { type: "LOAD" }
+    events: {} as ChildEvent,
   },
+
   actions: {
-    updateName: assign({
-      profile: ({ context, event }) => ({ ...context.profile, name: (event as any).name })
+    saveProfile: ({ event }) => {
+      const profile = (event as Extract<ChildEvent, { type: 'SAVE' }>).profile;
+      // Сохраняем сразу в оба слоя (legacy + db)
+      childModel.save(profile);
+      db.saveChild(profile);
+    },
+
+    assignProfile: assign({
+      profile: ({ event }) =>
+        (event as Extract<ChildEvent, { type: 'SAVE' }>).profile,
+      error: null,
     }),
-    updateGender: assign({
-      profile: ({ context, event }) => ({ ...context.profile, gender: (event as any).gender })
-    }),
-    saveProfile: assign({
-      isSaved: true
-    }),
-    resetSaved: assign({
-      isSaved: false
-    }),
+
+    clearProfile: () => {
+      childModel.clear();
+      db.clearChild();
+    },
+
     loadProfile: assign({
-      profile: () => childModel.load()
-    })
-  }
-}).createMachine({
-  id: "child",
-  initial: "loading",
-  context: {
-    profile: { name: "", gender: "" },
-    isSaved: false
+      profile: () => db.getChild() ?? childModel.load(),
+    }),
   },
+
+  guards: {
+    hasExistingProfile: () =>
+      childModel.hasProfile() || db.getChild() !== null,
+  },
+});
+
+export const childMachine = childMachineConfig.createMachine({
+  id: 'child',
+  initial: 'checking',
+
+  context: {
+    profile: null,
+    error: null,
+  },
+
   states: {
-    loading: {
-      entry: "loadProfile",
-      always: { target: "editing" }
-    },
-    editing: {
-      on: {
-        UPDATE_NAME: { actions: "updateName" },
-        UPDATE_GENDER: { actions: "updateGender" },
-        SAVE: {
-          target: "saving",
-          actions: "saveProfile"
-        }
-      }
-    },
-    saving: {
-      entry: ({ context }) => {
-        childModel.save(context.profile);
-      },
-      always: { target: "saved" }
-    },
-    saved: {
-      on: {
-        RESET: {
-          target: "editing",
-          actions: "resetSaved"
+    /**
+     * checking — проверяем наличие профиля при инициализации
+     */
+    checking: {
+      always: [
+        {
+          target: 'hasProfile',
+          guard: 'hasExistingProfile',
+          actions: assign({
+            profile: () => db.getChild() ?? childModel.load(),
+          }),
         },
-        LOAD: {
-          target: "loading"
-        }
-      }
-    }
-  }
+        { target: 'noProfile' },
+      ],
+    },
+
+    /**
+     * noProfile — профиль не создан, предлагаем заполнить
+     */
+    noProfile: {
+      on: {
+        SAVE: {
+          target: 'hasProfile',
+          actions: ['saveProfile', 'assignProfile'],
+        },
+      },
+    },
+
+    /**
+     * hasProfile — профиль ребёнка существует
+     */
+    hasProfile: {
+      on: {
+        SAVE: {
+          // Обновление существующего профиля (остаёмся в том же состоянии)
+          actions: ['saveProfile', 'assignProfile'],
+        },
+        CLEAR: {
+          target: 'noProfile',
+          actions: [
+            'clearProfile',
+            assign({ profile: null, error: null }),
+          ],
+        },
+        RELOAD: {
+          actions: 'loadProfile',
+        },
+      },
+    },
+  },
 });

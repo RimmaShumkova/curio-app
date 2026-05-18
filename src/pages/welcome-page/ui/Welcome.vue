@@ -23,7 +23,10 @@
 
             <StackLayout col="1" orientation="horizontal" verticalAlignment="middle">
               <Image src="res://icgoogle" class="googleIcon" />
-              <Label text="Войти через Google" class="googleBtnText" />
+              <Label
+                text="Войти через Google"
+                class="googleBtnText"
+              />
             </StackLayout>
 
             <StackLayout col="2"></StackLayout>
@@ -45,40 +48,53 @@
 
 <script>
 import { GoogleSignin } from '@nativescript/google-signin';
+
+import { userModel } from '../../../entities/user/model/user';
+import { db } from '../../../shared/lib/database';
+
 import ChildProfile from '../../child-profile-page/ui/ChildProfile.vue';
 
 export default {
   methods: {
     async onGoogleLogin() {
       try {
-        await GoogleSignin.configure({})
-        const user = await GoogleSignin.signIn();
+        await GoogleSignin.configure({});
+        const result = await GoogleSignin.signIn();
 
-        // const response = await fetch("http://10.0.2.2:3000/auth/google", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json"
-        //   },
-        //   body: JSON.stringify({
-        //     token: user.idToken
-        //   })
-        // });
+        // Сохраняем пользователя локально (бэкенд пока не подключён).
+        // Когда бэкенд будет готов — заменить на:
+        // this.send({ type: 'LOGIN_GOOGLE', token: result.idToken });
+        const googleUser = result.user ?? result;
+        const user = {
+          id: googleUser.id || `google_${Date.now()}`,
+          name: googleUser.name || 'Пользователь',
+          email: googleUser.email || '',
+          socialProvider: 'google',
+        };
+        userModel.save(user);
+        db.saveUser(user);
 
-        // const data = await response.json();
-        // console.log("User from backend:", data);
-
-        this.$navigateTo(ChildProfile);
+        this.$navigateTo(ChildProfile, { clearHistory: true });
 
       } catch (error) {
-        console.error("Ошибка входа:", error);
+        console.error('Ошибка Google Sign-In:', error);
+        alert('Не удалось войти через Google. Попробуйте ещё раз.');
       }
     },
 
     onGuestLogin() {
-      console.log('Вход как гость');
-      this.$navigateTo(ChildProfile);
-    }
-  }
+      const guestUser = {
+        id: `guest_${Date.now()}`,
+        name: 'Гость',
+        email: '',
+        socialProvider: null,
+      };
+      userModel.save(guestUser);
+      db.saveUser(guestUser);
+
+      this.$navigateTo(ChildProfile, { clearHistory: true });
+    },
+  },
 };
 </script>
 

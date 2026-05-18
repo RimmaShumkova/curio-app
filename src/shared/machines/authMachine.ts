@@ -1,85 +1,143 @@
-import { setup, fromPromise, assign } from "xstate";
-import { GoogleSignin } from "@nativescript/google-signin";
-import { userModel } from "../../entities/user/model/user";
+// src/shared/machines/authMachine.ts
+import { setup, assign, fromPromise } from 'xstate';
+import { loginWithGoogleApi } from '../api/client';
+import { userModel, User } from '../../entities/user/model/user';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface AuthContext {
-  user: {
-    name: string;
-    email: string;
-    id: string;
-  } | null;
-  errorMessage: string | null;
+  user: User | null;
+  error: string | null;
 }
 
-// Актор для входа через Google
-const googleLoginActor = fromPromise(async () => {
-  const result = await GoogleSignin.signIn();
-  return {
-    name: result.displayName || "",
-    email: result.email || "",
-    id: result.id || ""
-  };
-});
+type AuthEvent =
+  | { type: 'LOGIN_GOOGLE'; token: string }
+  | { type: 'LOGOUT' }
+  | { type: 'RETRY' };
 
-export const authMachine = setup({
+// ─── Machine ─────────────────────────────────────────────────────────────────
+
+const authMachineConfig = setup({
   types: {
     context: {} as AuthContext,
-    events: {} as { type: "LOGIN" } | { type: "RETRY" }
+    events: {} as AuthEvent,
   },
+
   actors: {
-    googleLogin: googleLoginActor
+    /**
+     * Вызывает API авторизации через Google и сохраняет пользователя локально
+     */
+    loginWithGoogle: fromPromise(async ({ input }: { input: { token: string } }) => {
+      const userData = await loginWithGoogleApi(input.token);
+
+      const user: User = {
+        id: userData.googleId || userData._id,
+        name: userData.name,
+        email: userData.email,
+        socialProvider: 'google',
+      };
+
+      userModel.save(user);
+      return user;
+    }),
   },
+
   actions: {
-    setUser: assign({
-      user: ({ event }) => (event as any).output,
-      errorMessage: null
+    clearUser: () => userModel.clear(),
+
+    assignUser: assign({
+      user: ({ event }) => (event as any).output as User,
+      error: null,
     }),
-    setError: assign({
-      errorMessage: ({ event }) => (event as any).error?.message || "Ошибка входа"
+
+    assignError: assign({
+      error: ({ event }) => {
+        const err = (event as any).error;
+        return err instanceof Error ? err.message : 'Ошибка авторизации';
+      },
     }),
-    saveUser: ({ context }) => {
-      if (context.user) {
-        userModel.save({
-          id: context.user.id,
-          name: context.user.name,
-          email: context.user.email,
-          socialProvider: "google"
-        });
-      }
-    }
-  }
-}).createMachine({
-  id: "auth",
-  initial: "unauthorized",
+  },
+
+  guards: {
+    isAlreadyLoggedIn: () => userModel.isLoggedIn(),
+  },
+});
+
+export const authMachine = authMachineConfig.createMachine({
+  id: 'auth',
+  initial: 'checking',
+
   context: {
     user: null,
-    errorMessage: null
+    error: null,
   },
+
   states: {
-    unauthorized: {
-      on: { LOGIN: "authorizing" }
+    /**
+     * checking — проверяем, есть ли сохранённый пользователь при старте
+     */
+    checking: {
+      always: [
+        {
+          target: 'authenticated',
+          guard: 'isAlreadyLoggedIn',
+          actions: assign({
+            user: () => userModel.load(),
+          }),
+        },
+        { target: 'unauthenticated' },
+      ],
     },
-    authorizing: {
+
+    /**
+     * unauthenticated — пользователь не вошёл
+     */
+    unauthenticated: {
+      on: {
+        LOGIN_GOOGLE: 'loggingIn',
+      },
+    },
+
+    /**
+     * loggingIn — идёт процесс входа через Google
+     */
+    loggingIn: {
       invoke: {
-        src: "googleLogin",
+        src: 'loginWithGoogle',
+        input: ({ event }) => ({
+          token: (event as Extract<AuthEvent, { type: 'LOGIN_GOOGLE' }>).token,
+        }),
         onDone: {
-          target: "authorized",
-          actions: ["setUser", "saveUser"]
+          target: 'authenticated',
+          actions: 'assignUser',
         },
         onError: {
-          target: "error",
-          actions: "setError"
-        }
-      }
+          target: 'error',
+          actions: 'assignError',
+        },
+      },
     },
-    authorized: {
-      type: "final"
+
+    /**
+     * authenticated — пользователь авторизован
+     */
+    authenticated: {
+      on: {
+        LOGOUT: {
+          target: 'unauthenticated',
+          actions: ['clearUser', assign({ user: null, error: null })],
+        },
+      },
     },
+
+    /**
+     * error — ошибка при авторизации
+     */
     error: {
-      on: { 
-        RETRY: "authorizing",
-        LOGIN: "authorizing"
-      }
-    }
-  }
+      on: {
+        LOGIN_GOOGLE: 'loggingIn',
+        RETRY: 'unauthenticated',
+      },
+    },
+  },
 });
